@@ -1,0 +1,289 @@
+const path = require('path');
+const dotenv = require(path.resolve(__dirname, '../backend/node_modules/dotenv'));
+const mongoose = require(path.resolve(__dirname, '../backend/node_modules/mongoose'));
+const bcrypt = require(path.resolve(__dirname, '../backend/node_modules/bcryptjs'));
+
+// Load environment variables from backend/.env
+dotenv.config({ path: path.resolve(__dirname, '../backend/.env') });
+
+const { SensorNode, Threshold, User, Reading, Alert } = require('../backend/src/models');
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaldrishti';
+
+/**
+ * Provisional seed defaults for water quality thresholds.
+ * As established in IMPLEMENTATION_DECISIONS.md (DEC-09), these values
+ * represent configurable provisional defaults derived from BIS IS 10500:2012 references.
+ */
+const PROVISIONAL_DEFAULT_THRESHOLDS = [
+  { parameter: 'pH', minimum: 6.5, maximum: 8.5, unit: 'pH' },
+  { parameter: 'turbidity', minimum: 0.0, maximum: 5.0, unit: 'NTU' },
+  { parameter: 'tds', minimum: 0.0, maximum: 500.0, unit: 'ppm' },
+  { parameter: 'temperature', minimum: 10.0, maximum: 40.0, unit: '°C' }
+];
+
+/**
+ * Prototype SensorNode metadata for single-node academic prototype
+ * Location: Bhagirathpura, Ward 12, Indore
+ */
+const PROTOTYPE_SENSOR_NODES = [
+  {
+    nodeId: 'NODE-01-INDORE-WARD12',
+    name: 'Bhagirathpura Supply Point 1',
+    location: {
+      latitude: 22.7196,
+      longitude: 75.8577,
+      address: 'Ward 12, Indore, MP'
+    },
+    deviceKeyHash: 'dev_device_key_hash_ward12',
+    status: 'Online',
+    lastSeen: new Date()
+  },
+  {
+    nodeId: 'NODE-02-INDORE-SARWATE',
+    name: 'Sarwate Water Station',
+    location: {
+      latitude: 22.7123,
+      longitude: 75.8645,
+      address: 'Sarwate Bus Stand Area, Indore, MP'
+    },
+    deviceKeyHash: 'dev_device_key_hash_sarwate',
+    status: 'Online',
+    lastSeen: new Date(Date.now() - 5 * 60000)
+  },
+  {
+    nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+    name: 'Khan River Monitoring Outpost',
+    location: {
+      latitude: 22.7312,
+      longitude: 75.8711,
+      address: 'Khan River Basin, Sector 4, Indore, MP'
+    },
+    deviceKeyHash: 'dev_device_key_hash_khan',
+    status: 'Online',
+    lastSeen: new Date(Date.now() - 2 * 60000)
+  }
+];
+
+const PROTOTYPE_SENSOR_NODE = PROTOTYPE_SENSOR_NODES[0];
+
+/**
+ * Initial Administrator & Citizen User Accounts with Secure Passwords
+ */
+const INITIAL_USERS = [
+  {
+    name: 'Anikesh Jain',
+    email: 'admin@jaldrishti.org',
+    role: 'Admin',
+    phone: '+919876543210',
+    organization: 'Municipal Water Board',
+    status: 'Active',
+    password: process.env.INITIAL_ADMIN_PASSWORD || 'Admin@JalDrishti2026!'
+  },
+  {
+    name: 'Akshat Jain',
+    email: 'priya@example.com',
+    role: 'Citizen',
+    phone: '+919812345678',
+    organization: 'Ward 12 Resident Association',
+    status: 'Active',
+    password: 'Citizen@JalDrishti2026!'
+  },
+  {
+    name: 'Rahul Verma',
+    email: 'rahul@example.com',
+    role: 'Citizen',
+    phone: '+919823456789',
+    organization: 'Community Health Volunteer',
+    status: 'Active',
+    password: 'Citizen@JalDrishti2026!'
+  },
+  {
+    name: 'Neha Singh',
+    email: 'neha@example.com',
+    role: 'Citizen',
+    phone: '+919834567890',
+    organization: 'Indore Civic Forum',
+    status: 'Inactive',
+    password: 'Citizen@JalDrishti2026!'
+  },
+  {
+    name: 'Vikram Patel',
+    email: 'vikram@example.com',
+    role: 'Citizen',
+    phone: '+919845678901',
+    organization: 'Local Resident',
+    status: 'Active',
+    password: 'Citizen@JalDrishti2026!'
+  }
+];
+
+const INITIAL_ADMIN_USER = INITIAL_USERS[0];
+
+async function seedDatabase(customUri) {
+  const uri = customUri || MONGODB_URI;
+  console.log(`[JalDrishti Seeder] Connecting to database at: ${uri}`);
+
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000
+    });
+  }
+
+  console.log('[JalDrishti Seeder] Database connection established.');
+
+  // 1. Seed Thresholds (Upsert by parameter name)
+  console.log('[JalDrishti Seeder] Seeding configurable threshold records...');
+  for (const t of PROVISIONAL_DEFAULT_THRESHOLDS) {
+    await Threshold.findOneAndUpdate(
+      { parameter: t.parameter },
+      { $set: t },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log(`  - Threshold: ${t.parameter} [${t.minimum} - ${t.maximum} ${t.unit}] (Provisional Default)`);
+  }
+
+  // 2. Seed Prototype SensorNodes (Upsert by nodeId)
+  console.log('[JalDrishti Seeder] Seeding prototype sensor nodes...');
+  for (const node of PROTOTYPE_SENSOR_NODES) {
+    await SensorNode.findOneAndUpdate(
+      { nodeId: node.nodeId },
+      { $set: node },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log(`  - Node: ${node.nodeId} (${node.name})`);
+  }
+
+  // 3. Seed Users with secure bcrypt password hashing
+  console.log('[JalDrishti Seeder] Seeding users with secure bcrypt hashing...');
+  for (const userDef of INITIAL_USERS) {
+    const passwordHash = await bcrypt.hash(userDef.password, 10);
+    const updateDoc = {
+      name: userDef.name,
+      email: userDef.email,
+      role: userDef.role,
+      phone: userDef.phone,
+      organization: userDef.organization,
+      status: userDef.status,
+      passwordHash,
+      lastLogin: new Date(Date.now() - Math.floor(Math.random() * 86400000 * 3))
+    };
+
+    await User.findOneAndUpdate(
+      { email: userDef.email },
+      { $set: updateDoc },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log(`  - User: ${userDef.email} (Role: ${userDef.role}, Status: ${userDef.status})`);
+  }
+
+  // 4. Seed Time-Series Telemetry Readings for trends and dashboard
+  console.log('[JalDrishti Seeder] Checking existing telemetry readings...');
+  const readingCount = await Reading.countDocuments({ nodeId: PROTOTYPE_SENSOR_NODE.nodeId });
+  if (readingCount < 10) {
+    console.log('[JalDrishti Seeder] Seeding initial 24-hour telemetry readings...');
+    const now = Date.now();
+    const readings = [];
+    // Generate readings over last 24 hours at 30-min intervals (48 points)
+    for (let i = 48; i >= 0; i--) {
+      const pointTime = new Date(now - i * 30 * 60 * 1000);
+      // Realistic safe ranges with slight random variation:
+      // pH: 7.1 to 7.6 (safe)
+      // Turbidity: 1.5 to 3.2 NTU (safe)
+      // TDS: 110 to 180 ppm (safe)
+      // Temperature: 21.0 to 24.5 °C (safe)
+      const pH = Number((7.2 + (Math.sin(i / 4) * 0.3) + (Math.random() * 0.1)).toFixed(2));
+      const turbidity = Number((2.1 + (Math.cos(i / 5) * 0.6) + (Math.random() * 0.2)).toFixed(2));
+      const tds = Math.round(135 + Math.sin(i / 3) * 25 + Math.random() * 10);
+      const temperature = Number((22.5 + Math.cos(i / 6) * 1.5 + Math.random() * 0.4).toFixed(1));
+
+      readings.push({
+        nodeId: PROTOTYPE_SENSOR_NODE.nodeId,
+        pH,
+        turbidity,
+        tds,
+        temperature,
+        overallStatus: 'Safe',
+        timestamp: pointTime,
+        createdAt: pointTime
+      });
+    }
+
+    // Add one recent breach reading for NODE-03 to demonstrate alert telemetry
+    const breachTime = new Date(now - 15 * 60 * 1000);
+    readings.push({
+      nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+      pH: 8.9,
+      turbidity: 7.4,
+      tds: 580,
+      temperature: 26.2,
+      overallStatus: 'Unsafe',
+      timestamp: breachTime,
+      createdAt: breachTime
+    });
+
+    const inserted = await Reading.insertMany(readings);
+    console.log(`  - Inserted ${inserted.length} telemetry readings.`);
+
+    // 5. Seed sample Alert record associated with the breach reading
+    const breachReading = inserted[inserted.length - 1];
+    await Alert.findOneAndUpdate(
+      { nodeId: 'NODE-03-INDORE-KHAN-RIVER', parameter: 'turbidity', status: 'Active' },
+      {
+        $set: {
+          nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+          readingId: breachReading._id,
+          parameter: 'turbidity',
+          value: 7.4,
+          thresholdLimit: 5.0,
+          thresholdMin: 0.0,
+          thresholdMax: 5.0,
+          direction: 'HIGH',
+          severity: 'High',
+          status: 'Active',
+          breachCount: 2,
+          lastBreachedAt: breachTime,
+          timestamp: breachTime
+        }
+      },
+      { upsert: true, new: true }
+    );
+    console.log('  - Seeded prototype active alert for NODE-03-INDORE-KHAN-RIVER.');
+  } else {
+    console.log(`  - Telemetry readings already present (${readingCount} records).`);
+  }
+
+  console.log('[JalDrishti Seeder] Seed operation completed successfully.');
+
+  return {
+    thresholdsCount: PROVISIONAL_DEFAULT_THRESHOLDS.length,
+    nodeId: PROTOTYPE_SENSOR_NODE.nodeId,
+    adminEmail: INITIAL_ADMIN_USER.email
+  };
+}
+
+// Execute directly if run as a script
+if (require.main === module) {
+  seedDatabase()
+    .then(async (result) => {
+      console.log('[JalDrishti Seeder] Verification summary:', result);
+      await mongoose.disconnect();
+      process.exit(0);
+    })
+    .catch(async (error) => {
+      console.error('[JalDrishti Seeder Error] Failed to seed database:', error.message);
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+      process.exit(1);
+    });
+}
+
+module.exports = {
+  seedDatabase,
+  PROVISIONAL_DEFAULT_THRESHOLDS,
+  PROTOTYPE_SENSOR_NODE,
+  PROTOTYPE_SENSOR_NODES,
+  INITIAL_ADMIN_USER,
+  INITIAL_USERS
+};

@@ -1,0 +1,35 @@
+Chapter 3.SYSTEM DESIGN AND ARCHITECTURE
+JalDrishti is designed as an IoT-based water-quality monitoring and early-warning system. The design combines multi-parameter sensing, wireless communication, backend processing, database storage, web monitoring, alerting and proposed image-based screening.
+3.1 Project Description
+The prototype monitors pH, turbidity, TDS and temperature using an ESP32-S3. Readings are transmitted over Wi-Fi using HTTP/JSON to a Node.js/Express backend, stored in MongoDB and presented through a React web application. Configurable thresholds support automatic alerts and SMS notifications.
+3.2 System Architecture
+The proposed architecture separates sensing, communication, application, data and presentation responsibilities. This separation provides a clear path from sensor acquisition to processing, storage and user visualization.
+3.3 Design Representation
+The following nine diagrams describe the proposed system structure, behaviour, data flow, database relationships, software components and deployment. They are design-stage representations for the pre-implementation project.
+3.4.1 System Architecture
+Description: The proposed JalDrishti system is organized into sensing, communication, application, data and presentation layers. The ESP32-S3 collects pH, turbidity, TDS and temperature readings and sends them through Wi-Fi to the Node.js/Express backend. The backend validates and processes the readings, stores them in MongoDB and supplies the React web application. SMS notification and AI image-screening modules are also connected to the application layer.
+Figure 3-1 System Architecture
+3.4.2 System Flowchart
+Description: The flowchart shows the complete monitoring process. Sensor values are sampled, converted into a JSON payload and transmitted to the backend. The payload is validated before storage. The stored reading is compared with configured thresholds; a breach generates an alert and notification, while normal readings continue to the monitoring dashboard.
+Figure 3-2 System Flowchart
+3.4.3 Use Case Diagram
+Description: The Use Case Diagram represents the interaction of the two primary actors, Administrator and Citizen, with JalDrishti. Both users can authenticate and access monitoring functions. The Administrator additionally manages thresholds, SMS recipients and records, while eligible users can perform water-image screening.
+Figure 3-3 Use Case Diagram
+3.4.4 Entity-Relationship Diagram (ERD)
+Description: The ER diagram represents the proposed logical data model. The main entities are User, SensorNode, Reading, Alert, Notification, ImageCheck and Threshold. Their relationships describe sensor readings, threshold-based alerts, notifications, users and image-screening records.
+Figure 3-4 Entity-Relationship Diagram (ERD)
+3.4.5 Data Flow Diagram (DFD — Level 0)
+Description: The Level 0 DFD presents JalDrishti as the central processing system and shows the flow of readings, user requests, stored data, alerts, SMS notifications and image-screening results between the users, application, database and external services.
+Figure 3-5 Data Flow Diagram (DFD — Level 0)
+3.4.6 Sequence Diagram
+Description: The sequence diagram describes the time-ordered sensor-to-alert interaction. The ESP32-S3 sends a JSON reading to the Express API; the API validates and stores it, the threshold engine evaluates the reading, and the dashboard is updated. If a threshold is breached, an alert and SMS notification are generated.
+Figure 3-6 Sequence Diagram
+3.4.7 Component Diagram
+Description: The component diagram shows the major JalDrishti software and hardware components and their dependencies: ESP32-S3 firmware, React web application, Express REST API, MongoDB, SMS gateway, AI image module and mapping service.
+Figure 3-7 Component Diagram
+3.4.8 Activity Diagram
+Description: The activity diagram describes the monitoring workflow from sensor sampling through transmission, validation and storage. Invalid data is rejected. Valid readings are compared against thresholds and then routed to either alert generation or normal dashboard presentation.
+Figure 3-8 Activity Diagram
+3.4.9 Deployment Diagram
+Description: The deployment diagram shows the proposed physical arrangement of the prototype. The monitoring node contains the ESP32-S3 and sensors, the application server hosts the Node.js/Express API, MongoDB provides persistent storage, and client devices access the React web application.
+Figure 3-9 Deployment Diagram

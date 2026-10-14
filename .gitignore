@@ -1,0 +1,89 @@
+# Node.js dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & local configuration
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# Build & distribution output
+dist/
+build/
+out/
+.next/
+
+# Testing & Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# PlatformIO & Embedded build output
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE & Editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS & System-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files & cache
+tmp/
+temp/
+.cache/
+.eslintcache
+.stylelintcache
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local configuration and credentials
+.DS_Store
+Thumbs.db
+
+# Academic documents - keep locally, don't upload
+1b_G2_Synopsis_CS508_Minor Project I_Jul-Dec 2026.pdf
+2a_G2_SRS_JalDrishti_FINAL.docx
+2b_G2_SRS_JalDrishti_FINAL.pdf
+3b_G2_Synopsis Presentation_CS508_Minor Project I_Jul-Dec 2026.pdf
+4a_G2_Design_Diagram_9_Diagrams_FINAL.docx

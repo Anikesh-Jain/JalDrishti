@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --water-bg: #F0FAFF;
+    --water-sidebar: #E5F6FF;
+    --water-surface: #E0F7FF;
+    --water-border: #BAE6FD;
+    --water-primary: #38BDF8;
+    --water-secondary: #0284C7;
+    --water-accent: #0369A1;
+    --env-green: #DDF8E8;
+    --env-light-green: #E8F8D9;
+    --accessible-green: #15803D;
+    --text-primary: #334155;
+    --text-secondary: #475569;
+    --text-heading: #1E293B;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F0FAFF;
+    color: #334155;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.02em;
+    color: #1E293B;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tasteful Subtle Water-Inspired Motion */
+@keyframes waterFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes waterGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes waveShift {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-20px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-water-float {
+  animation: waterFloat 6s ease-in-out infinite;
+}
+
+.animate-water-glow {
+  animation: waterGlow 4s ease-in-out infinite;
+}
+
+.animate-wave-subtle {
+  animation: waveShift 12s ease-in-out infinite;
+}
+
+/* Custom Fresh Water Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #BAE6FD;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7DD3FC;
+}
+
+/* Water scrollbars */
+.dark-scrollbar::-webkit-scrollbar-thumb,
+.water-scrollbar::-webkit-scrollbar-thumb {
+  background: #BAE6FD;
+  border-radius: 9999px;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb:hover,
+.water-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7DD3FC;
+}
+
+/* Glassmorphism helpers for Clean Water Theme */
+.glass-panel,
+.water-glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(186, 230, 253, 0.8);
+}
+
+.glass-panel-dark {
+  background: rgba(224, 247, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(186, 230, 253, 0.9);
+}
+
+/* Frosted Pale Water Blue Sidebar (Reference Concept) */
+.sidebar-glass {
+  background-color: #E5F6FF;
+  background-color: rgba(229, 246, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid #BAE6FD;
+}
+
+/* Centralized focus utility */
+@layer utilities {
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:ring-offset-2;
+  }
+}

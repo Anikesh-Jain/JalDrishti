@@ -1,0 +1,400 @@
+JalDrishtiSoftware Requirement Specifications
+IoT-Based Multi-Parameter Water Quality Monitoring and Early Warning SystemB.Tech CSE Minor ProjectDepartment of Computer Science & EngineeringAcropolis Institute of Technology and ResearchProject Guide: Prof. Dr. Sushma KhatriAafreen Khan • Ali Aamir • Anikesh Jain • Anugya Panchal
+System Users
+S. No.
+System User
+Purpose / Access
+1
+Administrator
+Manage monitoring configuration, safe-range thresholds, SMS recipients, alerts and system-facing functions.
+2
+Citizen
+View water-quality status, live readings, trends, alerts and node location; submit a water image for safe/unsafe screening.
+Operations
+1. System Operations
+Login / registration and role-based redirection to Admin or Citizen view.
+JWT-based authentication with bcrypt password hashing.
+Receive pH, turbidity, TDS and temperature readings from ESP32-S3 over Wi-Fi using HTTP/JSON.
+Validate incoming sensor payloads before processing and storage.
+Compare readings against configurable safe-range thresholds.
+Generate an alert when a configured threshold is breached.
+Store users, node/location, readings, alerts, notifications, image checks and thresholds in MongoDB.
+Send SMS notifications to the authority and registered residents when an alert is generated.
+Provide live readings, trends, alert history and node location through the web application.
+Support water-image upload and AI-based safe/unsafe screening with a confidence value.
+2. Administrator Operations
+Operation
+Operation Specification
+Login
+Display login; authenticate credentials; redirect to administrator dashboard.
+Live Monitoring
+View pH, turbidity, TDS and temperature readings.
+Threshold Configuration
+Configure safe-range limits used for threshold comparison and alerts.
+Alert Management
+View alert history, severity and acknowledgement.
+SMS Recipient Management
+Manage recipients for monitoring alerts.
+Node Location
+View the monitoring node using Leaflet/OpenStreetMap.
+Image Screening
+Upload a water image and view result, confidence and advisory note.
+Reporting / Export
+View historical readings and alert records; support CSV/report export.
+3. Citizen Operations
+Operation
+Operation Specification
+Registration / Login
+Create/access citizen account with role-based access.
+Water Status
+View plain-language safe/caution/unsafe status.
+Live Dashboard
+View current pH, turbidity, TDS and temperature and last-updated time.
+Trends
+View parameter trends with safe limits marked.
+Alerts
+View recent and historical alerts with severity.
+Map
+View monitoring node location.
+Image Check
+Upload a water photograph and receive safe/unsafe screening, confidence and advisory information.
+GUI and Functions
+1. Login / Registration
+Display login and registration interfaces.
+Authenticate credentials and redirect the user according to role.
+Use JWT authentication and bcrypt password hashing.
+Display clear validation and error messages.
+2. Live Dashboard
+Display four parameter cards for pH, turbidity, TDS and temperature.
+Display an overall water-quality status banner using safe/caution/unsafe states.
+Display the last-updated time.
+Provide access to trends, alerts and map views.
+3. Trends
+Display time-series line charts for monitored parameters.
+Mark the configured safe limit on the relevant chart.
+Retrieve historical readings from MongoDB.
+4. Alerts
+Display alert history, severity and acknowledgement.
+Generate alerts when readings breach configured safe ranges.
+Trigger SMS notifications through the configured SMS gateway.
+5. Map
+Display the single prototype monitoring node.
+Use Leaflet with OpenStreetMap tiles.
+6. Image Check
+Allow an administrator or citizen to upload a water image.
+Pass the image through the AI screening module.
+Return a safe/unsafe screening result, confidence value and advisory note.
+The exact AI implementation is to be decided between a hosted vision API or a trained image classifier.
+7. Admin Settings
+Configure thresholds.
+Manage SMS recipients.
+8. Citizen View
+Show water status in plain language.
+Show recent alerts.
+Use a responsive layout.
+Functional Requirements
+ID
+Requirement
+Specification
+FR-01
+Authentication
+Authenticate users and provide Admin/Citizen role-based access.
+FR-02
+Sensor Acquisition
+Receive pH, turbidity, TDS and temperature readings from ESP32-S3.
+FR-03
+Data Transmission
+Transmit readings over Wi-Fi using HTTP/JSON.
+FR-04
+Validation
+Validate sensor payloads before processing.
+FR-05
+Storage
+Store monitoring data in MongoDB.
+FR-06
+Thresholds
+Compare readings against configurable safe ranges.
+FR-07
+Alerts
+Create an alert when a configured threshold is breached.
+FR-08
+SMS
+Send SMS notifications to configured recipients.
+FR-09
+Dashboard
+Display current values of all four parameters.
+FR-10
+Trends
+Display historical parameter trends.
+FR-11
+Alert History
+Display alert history, severity and acknowledgement.
+FR-12
+Map
+Display node location using Leaflet/OpenStreetMap.
+FR-13
+Image Upload
+Allow eligible users to upload a water image.
+FR-14
+AI Screening
+Return safe/unsafe screening with confidence and advisory information.
+FR-15
+Admin Configuration
+Allow threshold and SMS recipient configuration.
+FR-16
+Reporting
+Support historical readings, alert logs and CSV/report export.
+Non-Functional Requirements
+ID
+Category
+Requirement
+NFR-01
+Performance
+Low end-to-end latency from reading to dashboard and SMS, measured during testing; indexed time-series queries in MongoDB.
+NFR-02
+Security
+JWT authentication, bcrypt password hashing, role-based access and validation of sensor payloads and uploaded images.
+NFR-03
+Usability
+Colour-coded safe/caution/unsafe status, clear validation/error messages and plain-language citizen status.
+NFR-04
+Reliability
+Reject invalid sensor data and calibrate sensors before use.
+NFR-05
+Maintainability
+Use MERN stack, modular services and Git/GitHub version control.
+NFR-06
+Responsiveness
+Provide a responsive web interface.
+NFR-07
+Scalability
+Initial prototype is single-node; design remains modular for future expansion.
+NFR-08
+Data Integrity
+Validated readings and related alert/notification records are stored consistently.
+System Architecture
+Sensing layer: four sensors connected to ESP32-S3, sampling at fixed intervals; regulated mains adapter.
+Communication layer: Wi-Fi (HTTP/JSON) is the only link between the node and backend.
+Application layer: Node.js/Express handles authentication, payload validation, threshold checks and alert generation; it also calls the SMS gateway and AI image module.
+Data layer: MongoDB stores users, node/location, readings, alerts, notifications, image checks and thresholds.
+Presentation layer: React web app shows live data, trends, alerts and Leaflet map and provides the image-upload page.
+Fig. 1: Architecture Diagram
+System Flow
+Fig. 2: System Flowchart
+User Interaction
+Fig. 3: Use Case Diagram
+Database Design
+The project synopsis defines the logical entities User, SensorNode, Reading, Alert, Notification, ImageCheck and Threshold and their relationships. The following tables are a proposed logical database structure for the pre-implementation design; field names are derived from the documented functions and entities and should be finalized during implementation.
+User Collection
+Field
+Data Type
+Description
+userId
+String / ID
+Primary identifier
+name
+String
+User name
+email
+String
+Registered email / login identity
+passwordHash
+String
+Bcrypt-protected password
+role
+String
+Admin or Citizen
+SensorNode Collection
+Field
+Data Type
+Description
+nodeId
+String / ID
+Prototype node identifier
+location
+Object
+Node location for map display
+status
+String
+Node status
+Reading Collection
+Field
+Data Type
+Description
+readingId
+String / ID
+Reading identifier
+nodeId
+String / Ref
+Source SensorNode
+pH
+Number
+pH observation
+turbidity
+Number
+Turbidity observation
+tds
+Number
+TDS observation
+temperature
+Number
+Temperature observation
+timestamp
+DateTime
+Reading time
+Alert Collection
+Field
+Data Type
+Description
+alertId
+String / ID
+Alert identifier
+readingId
+String / Ref
+Triggering reading
+severity
+String
+Alert severity
+status
+String
+Alert acknowledgement/status
+timestamp
+DateTime
+Alert time
+Notification Collection
+Field
+Data Type
+Description
+notificationId
+String / ID
+Notification identifier
+userId
+String / Ref
+Recipient
+alertId
+String / Ref
+Related alert
+channel
+String
+SMS / notification channel
+timestamp
+DateTime
+Notification time
+ImageCheck Collection
+Field
+Data Type
+Description
+imageCheckId
+String / ID
+Screening identifier
+userId
+String / Ref
+Submitting user
+result
+String
+Safe / Unsafe
+confidence
+Number
+Screening confidence
+advisory
+String
+Advisory note
+Threshold Collection
+Field
+Data Type
+Description
+thresholdId
+String / ID
+Threshold identifier
+parameter
+String
+pH / Turbidity / TDS / Temperature
+minimum
+Number
+Lower safe limit
+maximum
+Number
+Upper safe limit
+Entity Relationship Diagram
+Fig. 4: ER Diagram
+Data Flow Diagram
+Fig. 5: Data Flow Diagram (Level 0)
+Sequence Diagram
+Fig. 6: Sensor Reading and Alert Sequence
+Component Diagram
+Fig. 7: Component Diagram
+Activity Diagram
+Fig. 8: Water Monitoring Activity Diagram
+Deployment Diagram
+Fig. 9: Deployment Diagram
+Sample User Interfaces for Reference
+The following are proposed pre-implementation UI representations based on the final synopsis. They are not implementation screenshots.
+Fig. 10: Login / Registration Interface
+Fig. 11: Live Dashboard Interface
+Fig. 12: Trends and Alerts Interface
+Fig. 13: Image Check Interface
+Fig. 14: Admin Settings Interface
+Fig. 15: Citizen View Interface
+Security Requirements
+JWT-based authentication for protected sessions and API access.
+bcrypt password hashing.
+Role-based access separating Admin and Citizen capabilities.
+Validation of sensor payloads before processing.
+Validation of uploaded images before AI processing.
+Only authorized administrators can configure thresholds and SMS recipients.
+Testing Requirements
+Test ID
+Scenario
+Input
+Expected Output
+TC01
+pH calibration
+pH 4.01 and 6.86 buffer solutions
+Readings within accepted tolerance after calibration.
+TC02
+TDS accuracy
+Standard solution of known ppm
+Reading close to known value.
+TC03
+Valid sensor payload
+Correct JSON from ESP32-S3
+Reading stored in MongoDB and available to dashboard.
+TC04
+Threshold breach
+Reading outside configured safe range
+Alert created and notification flow triggered.
+TC05
+Image screening
+Uploaded water image
+Safe/unsafe result with confidence and advisory note.
+Scope and Constraints
+In Scope
+Single ESP32-S3 prototype node.
+pH, turbidity, TDS and temperature sensing.
+Wi-Fi/HTTP-JSON communication.
+MERN-based web platform.
+Configurable thresholds and automatic alerts.
+SMS notifications to authority and registered residents.
+Leaflet/OpenStreetMap node location.
+Citizen/Admin water-image screening with confidence.
+Historical readings, trends, alert history and CSV/report export.
+Out of Scope / Constraints
+Initial prototype is single-node.
+LoRaWAN is not part of the current communication path.
+Solar/battery deployment is not part of the current prototype; the node uses regulated mains power.
+Edge/TinyML inference is not part of the current planned implementation.
+Exact AI implementation is not fixed; hosted vision API or trained image classifier will be selected.
+Large-scale multi-node production deployment is outside the current prototype scope.
+Requirement Acceptance Criteria
+Four sensors can be read at fixed intervals after calibration.
+Valid readings can be transmitted to and accepted by the Express API.
+Validated readings are stored in MongoDB.
+Dashboard displays current readings and historical trends.
+Threshold breach creates an alert.
+Alert information reaches dashboard and configured SMS recipients during testing.
+Admin can configure thresholds and SMS recipients.
+Image upload produces the specified screening output after AI module integration.
+Authentication and role-based access work as specified.
+Planned test cases are executed and documented after implementation.
+Source Basis
+This SRS uses the supplied Library Management Software SRS as the formatting, organization and detail-level reference. The reference document contains system users, operations, detailed GUI/function specifications, database table structures and sample user interfaces. JalDrishti-specific requirements are derived from the final project synopsis. Where the synopsis does not specify an implementation-level field or diagram detail, the item is explicitly treated as a proposed pre-implementation design rather than an achieved implementation result.
