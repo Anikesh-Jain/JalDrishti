@@ -209,13 +209,19 @@ export default function HomePage() {
                 <div className="relative rounded-2xl p-6 bg-white/95 backdrop-blur-md border border-[#BAE6FD] shadow-2xl text-[#334155] space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-[#BAE6FD]">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className={`w-2.5 h-2.5 rounded-full ${latestReading ? 'bg-emerald-500 animate-pulse' : 'bg-cyan-500'}`} />
                       <span className="text-xs uppercase tracking-wider font-bold text-[#475569]">
                         Station Telemetry Status
                       </span>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#DDF8E8] border border-[#A7F3D0] text-[#15803D]">
-                      {latestReading?.overallStatus || 'Safe Bound'}
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                      latestReading?.overallStatus === 'Unsafe'
+                        ? 'bg-rose-50 border-rose-200 text-rose-700'
+                        : latestReading?.overallStatus === 'Safe'
+                        ? 'bg-[#DDF8E8] border-[#A7F3D0] text-[#15803D]'
+                        : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>
+                      {latestReading?.overallStatus || 'Awaiting Data'}
                     </span>
                   </div>
 
@@ -224,7 +230,7 @@ export default function HomePage() {
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Acidity (pH)</span>
                       <span className="text-2xl font-black text-[#0284C7] mt-1 block font-mono">
-                        {latestReading?.pH ? latestReading.pH.toFixed(1) : '7.2'}
+                        {typeof latestReading?.pH === 'number' ? latestReading.pH.toFixed(1) : '—'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">BIS 6.5 — 8.5 Limit</span>
                     </div>
@@ -232,18 +238,20 @@ export default function HomePage() {
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Dissolved Solids</span>
                       <span className="text-2xl font-black text-[#15803D] mt-1 block font-mono">
-                        {latestReading?.tds ? `${latestReading.tds} ppm` : '128 ppm'}
+                        {typeof latestReading?.tds === 'number' ? `${latestReading.tds} ppm` : '—'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">&lt; 500 ppm Permissible</span>
                     </div>
                   </div>
 
                   <div className="pt-2 flex items-center justify-between text-xs text-[#475569] border-t border-[#BAE6FD]">
-                    <span className="truncate">Node: {latestReading?.nodeName || 'Ward 12 Municipal Station'}</span>
-                    <span className="shrink-0 text-[#0284C7] font-mono text-[11px] font-semibold">● Live Telemetry</span>
+                    <span className="truncate">Node: {latestReading?.nodeName || latestReading?.nodeId || 'Ward 12 Municipal Station'}</span>
+                    <span className="shrink-0 text-[#0284C7] font-mono text-[11px] font-semibold">
+                      {latestReading ? '● Live Telemetry' : '● Station Online'}
+                    </span>
                   </div>
                   <p className="text-[10px] text-[#64748B] text-center italic">
-                    Sample telemetry displayed for demonstration and evaluation
+                    {latestReading ? 'Real-time telemetry stream from municipal monitoring node' : 'Autonomous IoT monitoring station active. Awaiting sensor telemetry.'}
                   </p>
                 </div>
               </div>

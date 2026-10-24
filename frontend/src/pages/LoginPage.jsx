@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheckIcon, UsersIcon } from '../components/common/Icons';
 import GoogleLoginButton from '../components/common/GoogleLoginButton';
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
@@ -82,28 +81,6 @@ export default function LoginPage() {
       navigate(dest, { replace: true });
     } catch (err) {
       setServerError(formatAuthError(err, 'Invalid email or password.'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDemoLogin = async (demoEmail, demoPassword, demoRole) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setFieldErrors({});
-    setServerError('');
-    setIsSubmitting(true);
-    try {
-      const res = await login({
-        email: demoEmail,
-        password: demoPassword
-      });
-      const dest = (from && from !== '/' && from !== '/login') 
-        ? from 
-        : (demoRole === 'Admin' ? '/admin' : '/citizen');
-      navigate(dest, { replace: true });
-    } catch (err) {
-      setServerError(formatAuthError(err, 'Demo login failed. Please ensure the database is seeded.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -223,7 +200,7 @@ export default function LoginPage() {
             {isSubmitting ? (
               <>
                 <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
                 <span>Signing In...</span>
@@ -233,33 +210,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* 1-Click Evaluation Credentials with clean SVGs (Zero emojis) */}
-        <div className="mt-6 pt-5 border-t border-[#BAE6FD]/80">
-          <p className="text-[10px] font-bold text-[#475569] uppercase tracking-wider text-center mb-2.5">
-            Quick Evaluation Credentials
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('admin@jaldrishti.org', 'Admin@JalDrishti2026!', 'Admin')}
-              disabled={isSubmitting}
-              className="px-3 py-2 text-xs font-semibold text-[#0284C7] bg-[#F0FAFF] hover:bg-[#E5F6FF] border border-[#BAE6FD] hover:border-[#0284C7]/50 rounded-xl transition-all flex items-center justify-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#0284C7]"
-            >
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-[#0284C7]" />
-              <span>Admin Demo</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('priya@example.com', 'Citizen@JalDrishti2026!', 'Citizen')}
-              disabled={isSubmitting}
-              className="px-3 py-2 text-xs font-semibold text-[#15803D] bg-[#DDF8E8] hover:bg-[#C6F6D5] border border-[#A7F3D0] rounded-xl transition-all flex items-center justify-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            >
-              <UsersIcon className="w-3.5 h-3.5 text-[#15803D]" />
-              <span>Citizen Demo</span>
-            </button>
-          </div>
-        </div>
 
         {/* Divider */}
         <div className="relative my-6 text-center">

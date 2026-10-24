@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAlertContext } from '../context/AlertContext';
 import Logo, { BrandLogoLink } from '../components/common/Logo';
 
 /**
@@ -14,6 +15,7 @@ import Logo, { BrandLogoLink } from '../components/common/Logo';
  */
 export default function Sidebar({ isOpen, onClose }) {
   const { user } = useAuth();
+  const { unreadCount } = useAlertContext();
   const location = useLocation();
   const isAdmin = user?.role === 'Admin';
 
@@ -55,7 +57,7 @@ export default function Sidebar({ isOpen, onClose }) {
       name: 'Alerts',
       path: '/citizen/alerts',
       alias: '/alerts',
-      badge: 3,
+      badge: unreadCount > 0 ? unreadCount : undefined,
       badgeColor: 'bg-rose-500',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +197,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   </span>
                   <span>{item.name}</span>
                 </div>
-                {item.badge && (
+                {Boolean(item.badge && item.badge > 0) && (
                   <span
                     className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white rounded-full ${
                       item.badgeColor || 'bg-rose-500'

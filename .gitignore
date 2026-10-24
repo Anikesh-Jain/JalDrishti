@@ -60,6 +60,7 @@ temp/
 .cache/
 .eslintcache
 .stylelintcache
+scripts/backup/
 
 # Environment variables and secrets
 .env

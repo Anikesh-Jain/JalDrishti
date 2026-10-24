@@ -77,8 +77,33 @@ class TestContext {
 
   async setup() {
     if (mongoose.connection.readyState === 0) {
-      const mongoUri = env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaldrishti';
-      await mongoose.connect(mongoUri);
+      const testMongoUri = process.env.TEST_MONGODB_URI ||
+        (env.MONGODB_URI ? env.MONGODB_URI.replace(/\/([^/?]+)(\?.*)?$/, '/$1_test$2') : 'mongodb://127.0.0.1:27017/jaldrishti_test');
+      await mongoose.connect(testMongoUri);
+
+      // Ensure test baseline thresholds exist in the isolated test database
+      const thresholdCount = await models.Threshold.countDocuments();
+      if (thresholdCount === 0) {
+        await models.Threshold.insertMany([
+          { parameter: 'pH', minimum: 6.5, maximum: 8.5, unit: 'pH', enabled: true },
+          { parameter: 'turbidity', minimum: 0.0, maximum: 5.0, unit: 'NTU', enabled: true },
+          { parameter: 'tds', minimum: 0.0, maximum: 500.0, unit: 'ppm', enabled: true },
+          { parameter: 'temperature', minimum: 10.0, maximum: 40.0, unit: '°C', enabled: true }
+        ]);
+      }
+
+      // Ensure initial admin user exists in test database for demo-login tests
+      const adminCount = await models.User.countDocuments({ role: 'Admin' });
+      if (adminCount === 0) {
+        const passHash = await bcrypt.hash('Admin@JalDrishti2026!', 10);
+        await models.User.create({
+          name: 'Test Administrator',
+          email: 'admin@jaldrishti.org',
+          role: 'Admin',
+          passwordHash: passHash,
+          status: 'Active'
+        });
+      }
     }
     this.server = http.createServer(app);
     await new Promise((resolve) => this.server.listen(0, '127.0.0.1', resolve));

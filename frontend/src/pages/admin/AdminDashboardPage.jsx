@@ -177,10 +177,10 @@ export default function AdminDashboardPage() {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-slate-900">
-                {data.nodes.length || 3}
+                {data.nodes.length}
               </span>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
-                Active sensor nodes connected
+                {data.nodes.length === 1 ? '1 active sensor node connected' : `${data.nodes.length} active sensor nodes connected`}
               </p>
             </div>
           </div>

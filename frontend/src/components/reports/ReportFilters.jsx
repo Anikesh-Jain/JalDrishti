@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 
 /**
  * JalDrishti Phase 21: ReportFilters Component
@@ -14,6 +15,21 @@ export default function ReportFilters({
   disabled = false
 }) {
   const isReadings = type === 'readings';
+  const [nodes, setNodes] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.sensor.getNodes()
+      .then((res) => {
+        if (mounted && res?.data) {
+          setNodes(res.data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 sm:p-4 mb-4">
@@ -131,7 +147,11 @@ export default function ReportFilters({
               className="text-xs font-medium bg-white border border-slate-300 rounded-md px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
             >
               <option value="all">All Nodes</option>
-              <option value="NODE-01">Node 1 (Ward 12, Indore)</option>
+              {nodes.map((node) => (
+                <option key={node.nodeId || node._id} value={node.nodeId}>
+                  {node.name ? `${node.nodeId} (${node.name})` : node.nodeId}
+                </option>
+              ))}
             </select>
           </div>
         </div>

@@ -75,8 +75,8 @@ export default function CitizenDashboardPage() {
 
   const [timeRange, setTimeRange] = useState('24H');
   const [trendData, setTrendData] = useState([]);
-  const [stationsCount, setStationsCount] = useState(3);
-  const [totalReadingsCount, setTotalReadingsCount] = useState(50);
+  const [stationsCount, setStationsCount] = useState(0);
+  const [totalReadingsCount, setTotalReadingsCount] = useState(0);
   const [alertsList, setAlertsList] = useState([]);
 
   // Fetch trend data and stats using real sensor history
@@ -110,18 +110,22 @@ export default function CitizenDashboardPage() {
           setTotalReadingsCount(historyRes.data.length);
         } else if (mounted) {
           setTrendData([]);
+          setTotalReadingsCount(0);
         }
       } catch {
-        if (mounted) setTrendData([]);
+        if (mounted) {
+          setTrendData([]);
+          setTotalReadingsCount(0);
+        }
       }
 
       try {
         const nodesRes = await api.sensor.getNodes();
         if (mounted && nodesRes && nodesRes.data) {
-          setStationsCount(nodesRes.data.length || 3);
+          setStationsCount(nodesRes.data.length || 0);
         }
       } catch {
-        // Fallback
+        if (mounted) setStationsCount(0);
       }
 
       try {
@@ -130,7 +134,7 @@ export default function CitizenDashboardPage() {
           setAlertsList(alertsRes.data);
         }
       } catch {
-        // Fallback
+        if (mounted) setAlertsList([]);
       }
     }
 
@@ -140,12 +144,17 @@ export default function CitizenDashboardPage() {
     };
   }, [timeRange]);
 
-  // Water Quality Status Distribution (Donut Chart matching reference UI)
-  const statusDistribution = [
-    { name: 'Safe', value: 8, color: '#10B981' },
-    { name: 'Caution', value: 3, color: '#F59E0B' },
-    { name: 'Unsafe', value: 1, color: '#EF4444' }
-  ];
+  const activeAlertNodeIds = new Set((alertsList || []).filter(a => a.status === 'Active').map(a => a.nodeId));
+  const alertStationsCount = Math.min(activeAlertNodeIds.size, stationsCount);
+  const safeStationsCount = Math.max(0, stationsCount - alertStationsCount);
+  const safePercentage = stationsCount > 0 ? Math.round((safeStationsCount / stationsCount) * 100) : 100;
+
+  // Water Quality Status Distribution (Donut Chart)
+  const statusDistribution = stationsCount > 0 ? [
+    { name: 'Safe', value: safeStationsCount, color: '#10B981' },
+    { name: 'Caution', value: 0, color: '#F59E0B' },
+    { name: 'Unsafe', value: alertStationsCount, color: '#EF4444' }
+  ].filter(item => item.value > 0) : [{ name: 'Awaiting Stations', value: 1, color: '#E2E8F0' }];
 
   return (
     <CitizenLayout>
@@ -179,7 +188,6 @@ export default function CitizenDashboardPage() {
           <ErrorState message={error} onRetry={refresh} />
         )}
 
-
         {/* 2. Four Stat Cards matching reference UI exactly */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Stations */}
@@ -191,9 +199,9 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">12</span>
-              <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
-                <span>↑ 2 new this month</span>
+              <span className="text-3xl font-black text-slate-900">{stationsCount}</span>
+              <p className="text-[11px] font-semibold text-cyan-700 mt-1 flex items-center gap-1">
+                <span>{stationsCount === 1 ? '1 active hardware station' : `${stationsCount} active stations`}</span>
               </p>
             </div>
           </div>
@@ -207,9 +215,9 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">8</span>
+              <span className="text-3xl font-black text-slate-900">{safeStationsCount}</span>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
-                67% of total
+                {stationsCount > 0 ? `${safePercentage}% of total` : 'Awaiting station telemetry'}
               </p>
             </div>
           </div>
@@ -223,9 +231,9 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">3</span>
+              <span className="text-3xl font-black text-slate-900">{alertStationsCount}</span>
               <p className="text-[11px] font-semibold text-amber-600 mt-1">
-                Require attention
+                {alertStationsCount > 0 ? 'Require attention' : 'All stations normal'}
               </p>
             </div>
           </div>
@@ -242,8 +250,8 @@ export default function CitizenDashboardPage() {
               <span className="text-3xl font-black text-slate-900">
                 {totalReadingsCount.toLocaleString()}
               </span>
-              <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
-                <span>↑ 12% from last month</span>
+              <p className="text-[11px] font-semibold text-slate-500 mt-1 flex items-center gap-1">
+                <span>{totalReadingsCount > 0 ? 'Logged telemetry points' : 'No telemetry logged yet'}</span>
               </p>
             </div>
           </div>
@@ -414,24 +422,24 @@ export default function CitizenDashboardPage() {
               </ResponsiveContainer>
               {/* Centered Percentage */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-black text-slate-900 leading-none">67%</span>
-                <span className="text-[10px] text-slate-500 font-semibold mt-0.5">Stations Safe</span>
+                <span className="text-2xl font-black text-slate-900 leading-none">
+                  {stationsCount > 0 ? `${safePercentage}%` : '—'}
+                </span>
+                <span className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                  {stationsCount > 0 ? 'Stations Safe' : 'No Stations'}
+                </span>
               </div>
             </div>
 
-            {/* Legend matching reference UI */}
+            {/* Legend matching real node status */}
             <div className="pt-3 border-t border-slate-100 flex items-center justify-around text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="font-semibold text-slate-700">8 Safe</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="font-semibold text-slate-700">3 Caution</span>
+                <span className="font-semibold text-slate-700">{safeStationsCount} Safe</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="font-semibold text-slate-700">1 Unsafe</span>
+                <span className="font-semibold text-slate-700">{alertStationsCount} Alert</span>
               </div>
             </div>
           </div>
@@ -443,44 +451,68 @@ export default function CitizenDashboardPage() {
             <div>
               <span className="text-[11px] text-slate-500 font-medium">Acidity (pH)</span>
               <p className="text-xl font-black text-slate-900 mt-0.5">
-                {reading?.pH !== undefined ? reading.pH.toFixed(1) : '7.2'}
+                {typeof reading?.pH === 'number' ? reading.pH.toFixed(1) : '—'}
               </p>
-              <span className="text-[10px] text-emerald-600 font-semibold">Normal (6.5 - 8.5)</span>
+              <span className="text-[10px] text-slate-500 font-semibold">
+                {typeof reading?.pH === 'number' ? 'Normal (6.5 - 8.5)' : 'Sensor bound: 6.5 - 8.5'}
+              </span>
             </div>
-            <Badge variant="safe" size="sm">Safe</Badge>
+            {typeof reading?.pH === 'number' ? (
+              <Badge variant="safe" size="sm">Safe</Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">Awaiting Telemetry</Badge>
+            )}
           </div>
 
           <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div>
               <span className="text-[11px] text-slate-500 font-medium">TDS</span>
               <p className="text-xl font-black text-slate-900 mt-0.5">
-                {reading?.tds !== undefined ? `${reading.tds} ppm` : '120 ppm'}
+                {typeof reading?.tds === 'number' ? `${reading.tds} ppm` : '—'}
               </p>
-              <span className="text-[10px] text-emerald-600 font-semibold">Good (&lt; 300 ppm)</span>
+              <span className="text-[10px] text-slate-500 font-semibold">
+                {typeof reading?.tds === 'number' ? 'Good (< 500 ppm)' : 'Sensor bound: < 500 ppm'}
+              </span>
             </div>
-            <Badge variant="safe" size="sm">Good</Badge>
+            {typeof reading?.tds === 'number' ? (
+              <Badge variant="safe" size="sm">Good</Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">Awaiting Telemetry</Badge>
+            )}
           </div>
 
           <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div>
               <span className="text-[11px] text-slate-500 font-medium">Turbidity</span>
               <p className="text-xl font-black text-slate-900 mt-0.5">
-                {reading?.turbidity !== undefined ? `${reading.turbidity.toFixed(1)} NTU` : '2.1 NTU'}
+                {typeof reading?.turbidity === 'number' ? `${reading.turbidity.toFixed(1)} NTU` : '—'}
               </p>
-              <span className="text-[10px] text-emerald-600 font-semibold">Clear (&lt; 5 NTU)</span>
+              <span className="text-[10px] text-slate-500 font-semibold">
+                {typeof reading?.turbidity === 'number' ? 'Clear (< 5 NTU)' : 'Sensor bound: < 5 NTU'}
+              </span>
             </div>
-            <Badge variant="safe" size="sm">Clear</Badge>
+            {typeof reading?.turbidity === 'number' ? (
+              <Badge variant="safe" size="sm">Clear</Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">Awaiting Telemetry</Badge>
+            )}
           </div>
 
           <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div>
               <span className="text-[11px] text-slate-500 font-medium">Temperature</span>
               <p className="text-xl font-black text-slate-900 mt-0.5">
-                {reading?.temperature !== undefined ? `${reading.temperature.toFixed(1)} °C` : '22.4 °C'}
+                {typeof reading?.temperature === 'number' ? `${reading.temperature.toFixed(1)} °C` : '—'}
               </p>
-              <span className="text-[10px] text-slate-500 font-semibold">Ambient (10 - 40 °C)</span>
+              <span className="text-[10px] text-slate-500 font-semibold">
+                {typeof reading?.temperature === 'number' ? 'Ambient (10 - 40 °C)' : 'Sensor bound: 10 - 40 °C'}
+              </span>
             </div>
-            <Badge variant="safe" size="sm">Normal</Badge>
+            {typeof reading?.temperature === 'number' ? (
+              <Badge variant="safe" size="sm">Normal</Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">Awaiting Telemetry</Badge>
+            )}
           </div>
         </div>
 

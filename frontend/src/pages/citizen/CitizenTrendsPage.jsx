@@ -257,18 +257,21 @@ export default function CitizenTrendsPage() {
         {/* Top Metric Cards: 4 Parameters with latest readings */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: pH */}
+          {/* Card 1: pH */}
           <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-card">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-600">pH Level</span>
               <Badge
                 variant={
-                  latestReading?.pH !== undefined && (latestReading.pH < 6.5 || latestReading.pH > 8.5)
-                    ? 'danger'
-                    : 'safe'
+                  latestReading?.pH !== undefined
+                    ? (latestReading.pH < 6.5 || latestReading.pH > 8.5 ? 'unsafe' : 'safe')
+                    : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
-                {latestReading?.pH !== undefined && (latestReading.pH < 6.5 || latestReading.pH > 8.5) ? 'Breach' : 'Normal'}
+                {latestReading?.pH !== undefined
+                  ? (latestReading.pH < 6.5 || latestReading.pH > 8.5 ? 'Breach' : 'Normal')
+                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
               </Badge>
             </div>
             <div className="mt-3">
@@ -287,13 +290,15 @@ export default function CitizenTrendsPage() {
               <span className="text-xs font-bold text-slate-600">Turbidity</span>
               <Badge
                 variant={
-                  latestReading?.turbidity !== undefined && latestReading.turbidity > 5.0
-                    ? 'danger'
-                    : 'safe'
+                  latestReading?.turbidity !== undefined
+                    ? (latestReading.turbidity > 5.0 ? 'unsafe' : 'safe')
+                    : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
-                {latestReading?.turbidity !== undefined && latestReading.turbidity > 5.0 ? 'Caution' : 'Normal'}
+                {latestReading?.turbidity !== undefined
+                  ? (latestReading.turbidity > 5.0 ? 'Caution' : 'Normal')
+                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
               </Badge>
             </div>
             <div className="mt-3">
@@ -316,13 +321,15 @@ export default function CitizenTrendsPage() {
               <span className="text-xs font-bold text-slate-600">Total Dissolved Solids</span>
               <Badge
                 variant={
-                  latestReading?.tds !== undefined && latestReading.tds > 500
-                    ? 'danger'
-                    : 'safe'
+                  latestReading?.tds !== undefined
+                    ? (latestReading.tds > 500 ? 'unsafe' : 'safe')
+                    : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
-                {latestReading?.tds !== undefined && latestReading.tds > 500 ? 'Caution' : 'Good'}
+                {latestReading?.tds !== undefined
+                  ? (latestReading.tds > 500 ? 'Caution' : 'Good')
+                  : (readings.length > 0 ? 'Good' : 'Awaiting Telemetry')}
               </Badge>
             </div>
             <div className="mt-3">
@@ -345,13 +352,15 @@ export default function CitizenTrendsPage() {
               <span className="text-xs font-bold text-slate-600">Water Temperature</span>
               <Badge
                 variant={
-                  latestReading?.temperature !== undefined && latestReading.temperature > 35.0
-                    ? 'danger'
-                    : 'safe'
+                  latestReading?.temperature !== undefined
+                    ? (latestReading.temperature > 35.0 ? 'unsafe' : 'safe')
+                    : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
-                {latestReading?.temperature !== undefined && latestReading.temperature > 35.0 ? 'Caution' : 'Normal'}
+                {latestReading?.temperature !== undefined
+                  ? (latestReading.temperature > 35.0 ? 'Caution' : 'Normal')
+                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
               </Badge>
             </div>
             <div className="mt-3">

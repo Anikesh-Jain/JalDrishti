@@ -393,9 +393,10 @@ const demoLogin = async (req, res) => {
   try {
     const { role } = req.body || {};
     const targetRole = role === 'Admin' ? 'Admin' : 'Citizen';
-    const targetEmail = targetRole === 'Admin' ? 'admin@jaldrishti.org' : 'priya@example.com';
+    const user = targetRole === 'Admin'
+      ? (await User.findOne({ email: 'admin@jaldrishti.org' })) || (await User.findOne({ role: 'Admin' }))
+      : await User.findOne({ role: 'Citizen' });
 
-    const user = await User.findOne({ email: targetEmail });
     if (!user) {
       return res.status(404).json({
         error: `Demo user for role ${targetRole} not found in database`

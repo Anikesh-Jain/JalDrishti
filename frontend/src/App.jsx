@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AlertProvider } from './context/AlertContext';
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
 import LoginPage from './pages/LoginPage';
@@ -41,7 +42,8 @@ function DashboardRedirect() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <AlertProvider>
+        <BrowserRouter>
         <ScrollRestorationHandler />
         <Routes>
           {/* Public & Authentication Routes */}
@@ -95,6 +97,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </AlertProvider>
     </AuthProvider>
   );
 }

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useAlertContext } from '../../context/AlertContext';
 import CitizenLayout from '../../layouts/CitizenLayout';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
@@ -18,93 +19,20 @@ import { AlertTriangleIcon, CheckCircleIcon } from '../../components/common/Icon
  */
 export default function CitizenAlertsPage() {
   const { user } = useAuth();
+  const {
+    alerts,
+    loading,
+    readAlertIds,
+    markAllAlertsAsRead,
+    acknowledgeAlert
+  } = useAlertContext();
   const isAdmin = user?.role === 'Admin';
 
   const [activeTab, setActiveTab] = useState('All');
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [readAlertIds, setReadAlertIds] = useState(new Set());
   const [ackingId, setAckingId] = useState(null);
 
-  const loadAlerts = async () => {
-    try {
-      const res = await api.alerts.getAll({ limit: 50 });
-      if (res?.data) {
-        setAlerts(res.data);
-      }
-    } catch {
-      // Fallback sample alerts matching reference UI if db has few records
-      setAlerts(getFallbackAlerts());
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadAlerts();
-  }, []);
-
-  function getFallbackAlerts() {
-    return [
-      {
-        _id: 'alt-1',
-        title: 'High Turbidity Level',
-        station: 'Station 3 - City Lake / Khan River',
-        nodeId: 'NODE-03-INDORE-KHAN-RIVER',
-        parameter: 'turbidity',
-        value: 7.4,
-        thresholdLimit: 5.0,
-        message: 'Turbidity level (7.4 NTU) exceeds safe threshold (5 NTU)',
-        time: '2 minutes ago',
-        severity: 'Critical',
-        status: 'Active',
-        timestamp: new Date(Date.now() - 2 * 60000)
-      },
-      {
-        _id: 'alt-2',
-        title: 'pH Level Out of Range',
-        station: 'Station 2 - Sarwate Station',
-        nodeId: 'NODE-02-INDORE-SARWATE',
-        parameter: 'pH',
-        value: 8.9,
-        thresholdLimit: 8.5,
-        message: 'pH level (8.9) is outside safe range (6.5 - 8.5)',
-        time: '15 minutes ago',
-        severity: 'Warning',
-        status: 'Active',
-        timestamp: new Date(Date.now() - 15 * 60000)
-      },
-      {
-        _id: 'alt-3',
-        title: 'Water Quality Normalized',
-        station: 'Station 1 - River Ganga Supply',
-        nodeId: 'NODE-01-INDORE-WARD12',
-        parameter: 'all',
-        value: null,
-        message: 'All parameters back to normal operational range',
-        time: '1 hour ago',
-        severity: 'Info',
-        status: 'Resolved',
-        timestamp: new Date(Date.now() - 60 * 60000)
-      },
-      {
-        _id: 'alt-4',
-        title: 'New Reading Available',
-        station: 'Station 1 - River Ganga Supply',
-        nodeId: 'NODE-01-INDORE-WARD12',
-        parameter: 'all',
-        value: null,
-        message: 'New automated water quality telemetry recorded',
-        time: '2 hours ago',
-        severity: 'Info',
-        status: 'Resolved',
-        timestamp: new Date(Date.now() - 120 * 60000)
-      }
-    ];
-  }
-
-  // Combine backend alerts with sample structure
-  const allFormattedAlerts = (alerts.length > 0 ? alerts : getFallbackAlerts()).map((a) => {
+  // Format real alerts from database
+  const allFormattedAlerts = (alerts || []).map((a) => {
     let severity = a.severity || (a.status === 'Active' ? (a.value > (a.thresholdLimit * 1.3) ? 'Critical' : 'Warning') : 'Info');
     if (a.parameter === 'turbidity' && a.value > 6.0) severity = 'Critical';
     if (a.status === 'Resolved') severity = 'Info';
@@ -118,7 +46,7 @@ export default function CitizenAlertsPage() {
       time: a.time || formatRelativeTime(a.timestamp),
       severity,
       status: a.status || 'Active',
-      isRead: readAlertIds.has(a._id || a.id) || a.status === 'Acknowledged'
+      isRead: (a._id && readAlertIds.has(a._id)) || (a.id && readAlertIds.has(a.id)) || a.status === 'Acknowledged'
     };
   });
 
@@ -132,18 +60,15 @@ export default function CitizenAlertsPage() {
   }
 
   const handleMarkAllRead = () => {
-    const allIds = new Set(allFormattedAlerts.map((a) => a.id));
-    setReadAlertIds(allIds);
+    markAllAlertsAsRead();
   };
 
   const handleAcknowledge = async (alertId) => {
     try {
       setAckingId(alertId);
-      await api.alerts.acknowledge(alertId);
-      setReadAlertIds((prev) => new Set([...prev, alertId]));
-      await loadAlerts();
+      await acknowledgeAlert(alertId);
     } catch {
-      setReadAlertIds((prev) => new Set([...prev, alertId]));
+      // Ignored
     } finally {
       setAckingId(null);
     }

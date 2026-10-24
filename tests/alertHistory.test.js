@@ -126,6 +126,58 @@ async function runAlertHistorySuite() {
       '8.7 Alert query payload strictly excludes sensitive system fields'
     );
 
+    // 8.8 Zero alerts baseline: query for non-existent or clean station returns empty array
+    const emptyRes = await ctx.makeRequest({
+      path: `/api/alerts?nodeId=NODE_CLEAN_${suffix}`,
+      headers: { Authorization: `Bearer ${citizenToken}` }
+    });
+    ctx.assert(
+      emptyRes.statusCode === 200 && Array.isArray(emptyRes.body?.data) && emptyRes.body.data.length === 0,
+      '8.8 Zero alerts baseline: returns empty array with count 0 when no alerts exist'
+    );
+
+    // 8.9 Citizen attempting acknowledgment is rejected with HTTP 403 Forbidden
+    const citizenAckRes = await ctx.makeRequest({
+      method: 'PATCH',
+      path: `/api/alerts/${activeAlert._id}/ack`,
+      headers: { Authorization: `Bearer ${citizenToken}` }
+    });
+    ctx.assert(
+      citizenAckRes.statusCode === 403,
+      '8.9 Citizen attempting alert acknowledgment rejected with HTTP 403'
+    );
+
+    // 8.10 Admin acknowledges active alert -> transitions to Acknowledged
+    const adminUser = await models.User.create({
+      name: 'Alert Admin',
+      email: `admin_${suffix}@example.com`,
+      passwordHash: passHash,
+      role: 'Admin'
+    });
+    const adminToken = generateToken({ userId: adminUser._id.toString(), role: adminUser.role });
+
+    const adminAckRes = await ctx.makeRequest({
+      method: 'PATCH',
+      path: `/api/alerts/${activeAlert._id}/ack`,
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const ackedAlert = await models.Alert.findById(activeAlert._id);
+    ctx.assert(
+      adminAckRes.statusCode === 200 && ackedAlert.status === 'Acknowledged' && ackedAlert.acknowledgedBy.toString() === adminUser._id.toString(),
+      '8.10 Admin alert acknowledgment successfully transitions status to Acknowledged'
+    );
+
+    // 8.11 Unauthenticated access to /api/alerts rejected with HTTP 401
+    const unauthRes = await ctx.makeRequest({
+      path: '/api/alerts'
+    });
+    ctx.assert(
+      unauthRes.statusCode === 401,
+      '8.11 Unauthenticated access to alert endpoints blocked with HTTP 401'
+    );
+
+    await models.User.deleteOne({ _id: adminUser._id });
+
   } finally {
     if (citizenUser) await models.User.deleteOne({ _id: citizenUser._id });
     if (activeAlert) await models.Alert.deleteOne({ _id: activeAlert._id });

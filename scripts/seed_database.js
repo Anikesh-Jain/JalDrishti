@@ -120,9 +120,11 @@ const INITIAL_USERS = [
 
 const INITIAL_ADMIN_USER = INITIAL_USERS[0];
 
-async function seedDatabase(customUri) {
+async function seedDatabase(customUri, options = {}) {
   const uri = customUri || MONGODB_URI;
+  const includeDemo = options.includeDemo || process.argv.includes('--demo');
   console.log(`[JalDrishti Seeder] Connecting to database at: ${uri}`);
+  console.log(`[JalDrishti Seeder] Mode: ${includeDemo ? 'DEMO SEED (includes simulated nodes, users, readings)' : 'PRODUCTION / CLEAN BASELINE (thresholds, hardware node, admin only)'}`);
 
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(uri, {
@@ -143,9 +145,10 @@ async function seedDatabase(customUri) {
     console.log(`  - Threshold: ${t.parameter} [${t.minimum} - ${t.maximum} ${t.unit}] (Provisional Default)`);
   }
 
-  // 2. Seed Prototype SensorNodes (Upsert by nodeId)
-  console.log('[JalDrishti Seeder] Seeding prototype sensor nodes...');
-  for (const node of PROTOTYPE_SENSOR_NODES) {
+  // 2. Seed SensorNode(s)
+  const nodesToSeed = includeDemo ? PROTOTYPE_SENSOR_NODES : [PROTOTYPE_SENSOR_NODE];
+  console.log(`[JalDrishti Seeder] Seeding sensor node(s) (${nodesToSeed.length} node(s))...`);
+  for (const node of nodesToSeed) {
     await SensorNode.findOneAndUpdate(
       { nodeId: node.nodeId },
       { $set: node },
@@ -155,8 +158,9 @@ async function seedDatabase(customUri) {
   }
 
   // 3. Seed Users with secure bcrypt password hashing
-  console.log('[JalDrishti Seeder] Seeding users with secure bcrypt hashing...');
-  for (const userDef of INITIAL_USERS) {
+  const usersToSeed = includeDemo ? INITIAL_USERS : [INITIAL_ADMIN_USER];
+  console.log(`[JalDrishti Seeder] Seeding user(s) (${usersToSeed.length} user(s))...`);
+  for (const userDef of usersToSeed) {
     const passwordHash = await bcrypt.hash(userDef.password, 10);
     const updateDoc = {
       name: userDef.name,
@@ -177,80 +181,74 @@ async function seedDatabase(customUri) {
     console.log(`  - User: ${userDef.email} (Role: ${userDef.role}, Status: ${userDef.status})`);
   }
 
-  // 4. Seed Time-Series Telemetry Readings for trends and dashboard
-  console.log('[JalDrishti Seeder] Checking existing telemetry readings...');
-  const readingCount = await Reading.countDocuments({ nodeId: PROTOTYPE_SENSOR_NODE.nodeId });
-  if (readingCount < 10) {
-    console.log('[JalDrishti Seeder] Seeding initial 24-hour telemetry readings...');
-    const now = Date.now();
-    const readings = [];
-    // Generate readings over last 24 hours at 30-min intervals (48 points)
-    for (let i = 48; i >= 0; i--) {
-      const pointTime = new Date(now - i * 30 * 60 * 1000);
-      // Realistic safe ranges with slight random variation:
-      // pH: 7.1 to 7.6 (safe)
-      // Turbidity: 1.5 to 3.2 NTU (safe)
-      // TDS: 110 to 180 ppm (safe)
-      // Temperature: 21.0 to 24.5 °C (safe)
-      const pH = Number((7.2 + (Math.sin(i / 4) * 0.3) + (Math.random() * 0.1)).toFixed(2));
-      const turbidity = Number((2.1 + (Math.cos(i / 5) * 0.6) + (Math.random() * 0.2)).toFixed(2));
-      const tds = Math.round(135 + Math.sin(i / 3) * 25 + Math.random() * 10);
-      const temperature = Number((22.5 + Math.cos(i / 6) * 1.5 + Math.random() * 0.4).toFixed(1));
+  // 4. Seed Time-Series Telemetry Readings (ONLY in demo mode)
+  if (includeDemo) {
+    console.log('[JalDrishti Seeder] Checking existing telemetry readings...');
+    const readingCount = await Reading.countDocuments({ nodeId: PROTOTYPE_SENSOR_NODE.nodeId });
+    if (readingCount < 10) {
+      console.log('[JalDrishti Seeder] Seeding initial 24-hour demo telemetry readings...');
+      const now = Date.now();
+      const readings = [];
+      for (let i = 48; i >= 0; i--) {
+        const pointTime = new Date(now - i * 30 * 60 * 1000);
+        const pH = Number((7.2 + (Math.sin(i / 4) * 0.3) + (Math.random() * 0.1)).toFixed(2));
+        const turbidity = Number((2.1 + (Math.cos(i / 5) * 0.6) + (Math.random() * 0.2)).toFixed(2));
+        const tds = Math.round(135 + Math.sin(i / 3) * 25 + Math.random() * 10);
+        const temperature = Number((22.5 + Math.cos(i / 6) * 1.5 + Math.random() * 0.4).toFixed(1));
 
+        readings.push({
+          nodeId: PROTOTYPE_SENSOR_NODE.nodeId,
+          pH,
+          turbidity,
+          tds,
+          temperature,
+          overallStatus: 'Safe',
+          timestamp: pointTime,
+          createdAt: pointTime
+        });
+      }
+
+      const breachTime = new Date(now - 15 * 60 * 1000);
       readings.push({
-        nodeId: PROTOTYPE_SENSOR_NODE.nodeId,
-        pH,
-        turbidity,
-        tds,
-        temperature,
-        overallStatus: 'Safe',
-        timestamp: pointTime,
-        createdAt: pointTime
+        nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+        pH: 8.9,
+        turbidity: 7.4,
+        tds: 580,
+        temperature: 26.2,
+        overallStatus: 'Unsafe',
+        timestamp: breachTime,
+        createdAt: breachTime
       });
+
+      const inserted = await Reading.insertMany(readings);
+      console.log(`  - Inserted ${inserted.length} demo telemetry readings.`);
+
+      const breachReading = inserted[inserted.length - 1];
+      await Alert.findOneAndUpdate(
+        { nodeId: 'NODE-03-INDORE-KHAN-RIVER', parameter: 'turbidity', status: 'Active' },
+        {
+          $set: {
+            nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+            readingId: breachReading._id,
+            parameter: 'turbidity',
+            value: 7.4,
+            thresholdLimit: 5.0,
+            thresholdMin: 0.0,
+            thresholdMax: 5.0,
+            direction: 'HIGH',
+            severity: 'High',
+            status: 'Active',
+            breachCount: 2,
+            lastBreachedAt: breachTime,
+            timestamp: breachTime
+          }
+        },
+        { upsert: true, new: true }
+      );
+      console.log('  - Seeded prototype active alert for NODE-03-INDORE-KHAN-RIVER.');
     }
-
-    // Add one recent breach reading for NODE-03 to demonstrate alert telemetry
-    const breachTime = new Date(now - 15 * 60 * 1000);
-    readings.push({
-      nodeId: 'NODE-03-INDORE-KHAN-RIVER',
-      pH: 8.9,
-      turbidity: 7.4,
-      tds: 580,
-      temperature: 26.2,
-      overallStatus: 'Unsafe',
-      timestamp: breachTime,
-      createdAt: breachTime
-    });
-
-    const inserted = await Reading.insertMany(readings);
-    console.log(`  - Inserted ${inserted.length} telemetry readings.`);
-
-    // 5. Seed sample Alert record associated with the breach reading
-    const breachReading = inserted[inserted.length - 1];
-    await Alert.findOneAndUpdate(
-      { nodeId: 'NODE-03-INDORE-KHAN-RIVER', parameter: 'turbidity', status: 'Active' },
-      {
-        $set: {
-          nodeId: 'NODE-03-INDORE-KHAN-RIVER',
-          readingId: breachReading._id,
-          parameter: 'turbidity',
-          value: 7.4,
-          thresholdLimit: 5.0,
-          thresholdMin: 0.0,
-          thresholdMax: 5.0,
-          direction: 'HIGH',
-          severity: 'High',
-          status: 'Active',
-          breachCount: 2,
-          lastBreachedAt: breachTime,
-          timestamp: breachTime
-        }
-      },
-      { upsert: true, new: true }
-    );
-    console.log('  - Seeded prototype active alert for NODE-03-INDORE-KHAN-RIVER.');
   } else {
-    console.log(`  - Telemetry readings already present (${readingCount} records).`);
+    console.log('[JalDrishti Seeder] Clean baseline mode: Skipping synthetic readings and demo alerts.');
   }
 
   console.log('[JalDrishti Seeder] Seed operation completed successfully.');
@@ -258,7 +256,8 @@ async function seedDatabase(customUri) {
   return {
     thresholdsCount: PROVISIONAL_DEFAULT_THRESHOLDS.length,
     nodeId: PROTOTYPE_SENSOR_NODE.nodeId,
-    adminEmail: INITIAL_ADMIN_USER.email
+    adminEmail: INITIAL_ADMIN_USER.email,
+    includeDemo
   };
 }
 
