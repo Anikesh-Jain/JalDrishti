@@ -20,6 +20,7 @@
  * 16. Full Multi-User Integration Workflow
  * 17. User Management & Account Deletion Safeguards
  * 18. Contact Us & Inquiry Response Management
+ * 19. Hardware & Device Onboarding
  */
 
 const { TestContext } = require('./testContext');
@@ -41,6 +42,7 @@ const { runFrontendSuite } = require('./frontend.test');
 const { runFullIntegrationSuite } = require('./fullIntegration.test');
 const { runUserManagementSuite } = require('./userManagement.test');
 const { runContactInquiriesSuite } = require('./contactInquiries.test');
+const { runHardwareSuite } = require('./hardware.test');
 
 async function main() {
   console.log('================================================================================');
@@ -66,7 +68,8 @@ async function main() {
     runFrontendSuite,
     runFullIntegrationSuite,
     runUserManagementSuite,
-    runContactInquiriesSuite
+    runContactInquiriesSuite,
+    runHardwareSuite
   ];
 
   const results = [];

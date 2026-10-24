@@ -24,8 +24,7 @@ export default function AppLayout({ children }) {
     { name: 'Overview', href: '/#overview' },
     { name: 'Indicators', href: '/#indicators' },
     { name: 'Architecture', href: '/#how-it-works' },
-    { name: 'Standards', href: '/#research' },
-    { name: 'Facts & Context', href: '/#facts' },
+    { name: 'FAQ', href: '/#faq' },
     { name: 'Contact', href: '/#contact' }
   ];
 

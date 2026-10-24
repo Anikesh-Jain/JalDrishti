@@ -15,6 +15,12 @@ import {
   ImageIcon
 } from '../components/common/Icons';
 import api from '../services/api';
+import {
+  Stage1SensorVisual,
+  Stage2WifiBlynkVisual,
+  Stage3BackendVisual,
+  Stage4WebAppVisual
+} from '../components/home/ArchitectureVisuals';
 
 /**
  * JalDrishti Public Landing Page
@@ -24,10 +30,9 @@ import api from '../services/api';
  * 2. Overview (#overview, #mission)
  * 3. Indicators (#indicators)
  * 4. Architecture (#how-it-works)
- * 5. Standards (#research, #docs)
- * 6. Facts & Context (#facts, #help)
- * 7. Contact (#contact)
- * 8. Governance / Terms (#privacy, #terms) & CTA -> Footer (via AppLayout)
+ * 5. FAQ (#faq, #help)
+ * 6. Contact (#contact)
+ * 7. Governance / Terms (#privacy, #terms) & CTA -> Footer (via AppLayout)
  */
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
@@ -97,20 +102,36 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: 'Which physical and chemical water parameters are monitored?',
-      a: 'JalDrishti continuously acquires four core indicators via dedicated probes: Hydrogen-ion concentration (pH), Turbidity (NTU), Total Dissolved Solids (TDS in ppm/mg/L), and Water Temperature (°C).'
+      q: 'What is JalDrishti and how does it work?',
+      a: 'JalDrishti is an IoT-based water quality monitoring platform designed to make water quality information transparent, accessible, and easy to interpret. It pairs ready-made sensor devices installed in community or household distribution lines with an intuitive web application. The platform continuously ingests telemetry, tracks historical trends, detects unusual deviations against reference benchmarks, provides interactive GIS station maps, and generates downloadable reports. Citizens can monitor community water sources and receive timely advisories.'
+    },
+    {
+      q: 'What does the ready-made sensor device measure?',
+      a: 'The ready-made hardware unit measures four fundamental physical and chemical indicators: Hydrogen-ion concentration (pH), Optical Turbidity (in NTU), Total Dissolved Solids (TDS in ppm / mg/L), and Water Temperature (in °C). The unit is pre-assembled and enclosed for inline plumbing or tank deployment, eliminating any manual breadboarding or wiring by the user.'
+    },
+    {
+      q: 'What do pH, turbidity, TDS, and temperature indicate?',
+      a: 'Each parameter provides distinct insight into water conditions: pH measures acidity or basicity (affecting pipe corrosion, metallic leaching, and chlorine disinfection efficacy); Turbidity measures cloudiness from suspended micro-particles, silt, or colloidal organic matter (a key operational indicator of filtration integrity or distribution disturbance); TDS measures total inorganic mineral salts (calcium, magnesium, chloride, sulfates) and dissolved matter that influence taste and hardness; and Water Temperature influences biochemical activity and dissolved oxygen dynamics.'
+    },
+    {
+      q: 'Which water quality standards and reference thresholds does JalDrishti use?',
+      a: 'JalDrishti aligns its reference thresholds with the Bureau of Indian Standards (BIS IS 10500:2012 Drinking Water Specification) and World Health Organization (WHO) guidance: pH is evaluated against an acceptable range of 6.5 to 8.5; Turbidity uses an acceptable limit of ≤ 1.0 NTU with a permissible limit of ≤ 5.0 NTU in the absence of an alternate source; TDS uses an acceptable limit of ≤ 500 ppm (mg/L) and a permissible limit of ≤ 2000 ppm (with drinking desirability typically < 300 ppm); Temperature is tracked against typical ambient delivery ranges (10°C to 40°C). Note: JalDrishti reference thresholds provide operational early warning screening and trend awareness; they do NOT constitute certified laboratory or regulatory potability certification, which requires microbiological and toxicological laboratory testing.'
     },
     {
       q: 'How does the automated early warning and alert engine function?',
-      a: 'Incoming telemetry is checked against multi-tier safe limits aligned with BIS IS 10500:2012 standards. When a parameter breaches permitted limits, the engine flags an Active breach and dispatches real-time community warnings with debounced SMS notifications.'
+      a: 'As telemetry arrives via the ingestion pipeline, the backend threshold engine compares each parameter against the multi-tier reference limits. If any value exceeds acceptable or permissible boundaries, the system automatically registers an active breach, marks the station on the public map, renders clear warning indicators on citizen dashboards, and dispatches debounced SMS and notification alerts to subscribed community members to avoid repetitive alert spam.'
     },
     {
-      q: 'What is the role of the AI Water Image Screening feature?',
-      a: 'The image screening module utilizes Google Gemini Vision to conduct preliminary visual inspection of surface water samples (detecting discoloration, algal blooms, or gross turbidity). It serves as an auxiliary citizen screening tool and does not replace laboratory chemical certification.'
+      q: 'How does the ready-made sensor device connect to the application?',
+      a: 'The device connects via 2.4 GHz Wi-Fi using the ESP32-S3 microcontroller and the Blynk IoT cloud infrastructure. During initial setup, the device broadcasts a temporary local configuration network (SoftAP at 192.168.4.1). Citizens enter their local Wi-Fi credentials and device token directly in their web browser. Wi-Fi credentials remain strictly on the local device and are never sent to external servers. Once online, readings stream securely to Blynk and are routed into the JalDrishti database via configured webhooks.'
     },
     {
-      q: 'What hardware microcontroller is JalDrishti engineered on?',
-      a: 'The IoT node runs on an ESP32-S3 microcontroller communicating over Wi-Fi via secure HTTP/JSON payloads with device API key authentication.'
+      q: 'What can citizens do if they do not have a sensor device?',
+      a: 'Citizens do not need a personal sensor device to benefit from JalDrishti. Anyone can freely access the public portal to inspect active community monitoring stations on the interactive map, examine real-time and historical 4-parameter trend charts, download municipal water quality summaries, view real-time contamination alerts, and submit surface water photos for AI-assisted image screening.'
+    },
+    {
+      q: 'What can AI water image screening determine, and what are its limitations?',
+      a: 'The complementary AI screening tool uses Google Gemini Vision to conduct preliminary visual inspection of surface water photographs, identifying visible cues such as severe discoloration, heavy colloidal cloudiness, surface oil sheens, or algal blooms. However, AI image screening CANNOT detect dissolved chemical contaminants, microscopic bacteria, heavy metals (such as arsenic or lead), or odorless toxins. It serves exclusively as an auxiliary visual screening aid and never replaces physical probe telemetry or certified laboratory testing.'
     }
   ];
 
@@ -119,15 +140,18 @@ export default function HomePage() {
       {/* =========================================================================
           1. FULL-VIEWPORT HERO SECTION
           ========================================================================= */}
-      <section id="hero" className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden scroll-mt-16">
+      <section id="hero" className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden scroll-mt-16 border-b border-[#BAE6FD]">
         {/* Natural landscape background with selective readability scrim */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105 pointer-events-none"
           style={{ backgroundImage: `url('/images/hero-water.jpg')` }}
         />
-        {/* Subtle directional gradient: darkens gently on the left for crisp text contrast while keeping lake, mountains, and trees clearly visible */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-900/35 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#F0FAFF] via-transparent to-black/20 pointer-events-none" />
+        {/* Directional scrim: darkens softly on the left for crisp heading contrast while preserving vivid visibility of the Himalayan lake, mountains, and trees across the page */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/40 to-transparent pointer-events-none" />
+        {/* Soft top vignette */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/25 to-transparent pointer-events-none" />
+        {/* Softened bottom transition without heavy opaque white washing out the lake water and shoreline */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#F0FAFF]/40 to-transparent pointer-events-none" />
 
         {/* Hero Content Container */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 w-full z-10">
@@ -257,39 +281,32 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Gentle Wave Divider Transition to Overview */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden leading-none z-10 pointer-events-none">
-          <svg className="relative block w-full h-8 sm:h-12 text-[#F0FAFF]" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,50 L1200,120 L0,120 Z" fill="currentColor" />
-          </svg>
-        </div>
       </section>
 
       {/* =========================================================================
           2. PROJECT OVERVIEW & MISSION (MUST BE IMMEDIATELY AFTER HERO)
           ========================================================================= */}
-      <section id="overview" className="py-20 lg:py-24 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16 relative">
+      <section id="overview" className="pt-8 pb-14 lg:pt-10 lg:pb-16 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Left Content Column */}
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider">
                 <DropletIcon className="w-3.5 h-3.5 text-[#0284C7]" />
-                <span>Project Overview & Civic Mission</span>
+                <span>Platform Overview & Civic Mission</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight leading-tight" id="mission">
-                Clean Water, Safer Tomorrow: <br />
-                <span className="text-[#0284C7]">The JalDrishti Mission</span>
+                Continuous Monitoring &amp; Civic Awareness: <br />
+                <span className="text-[#0284C7]">The JalDrishti Platform</span>
               </h2>
 
               <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
-                JalDrishti is an applied environmental technology project conceived as part of <strong>JalDrishti — CS506 Minor Project</strong> at <strong>Acropolis Institute of Technology and Research, Indore</strong>.
+                JalDrishti is an IoT-based water quality monitoring platform designed to make water quality information easier to access and understand. It combines a ready-made sensor device that monitors parameters such as pH, turbidity, total dissolved solids (TDS), and temperature with a web application that presents readings, historical trends, alerts, maps, and reports.
               </p>
 
               <p className="text-sm text-[#475569] leading-relaxed">
-                Our objective is to overcome the critical limitations of traditional intermittent grab-sampling in municipal water distribution by deploying autonomous, affordable IoT telemetry nodes that deliver continuous monitoring, early contamination detection, and transparent civic communication.
+                Citizens without a sensor device can also explore available water quality information and use AI-assisted image screening as a complementary feature. JalDrishti aims to support continuous monitoring, early awareness of unusual readings, and more transparent communication about water quality.
               </p>
 
               {/* Two Core Pillar Cards */}
@@ -298,9 +315,9 @@ export default function HomePage() {
                   <div className="w-8 h-8 rounded-lg bg-[#E0F7FF] text-[#0284C7] flex items-center justify-center font-bold text-xs mb-3">
                     <ActivityIcon className="w-4 h-4 text-[#0284C7]" />
                   </div>
-                  <h4 className="text-sm font-bold text-[#1E293B]">Autonomous Telemetry</h4>
+                  <h4 className="text-sm font-bold text-[#1E293B]">Continuous Telemetry</h4>
                   <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                    Continuous probe sampling cycle every 30 seconds with instant multi-variate threshold validation.
+                    Automated multi-parameter sensor updates every 30 seconds with immediate reference threshold checking.
                   </p>
                 </div>
 
@@ -310,16 +327,16 @@ export default function HomePage() {
                   </div>
                   <h4 className="text-sm font-bold text-[#1E293B]">Community Early Warning</h4>
                   <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                    Immediate breach notifications and debounced SMS alerts before contaminated water reaches household taps.
+                    Clear notifications and debounced alerts when unusual readings occur, providing early awareness across the distribution line.
                   </p>
                 </div>
               </div>
 
-              {/* Research Attribution Card */}
+              {/* Reference Standards Card */}
               <div className="p-4 rounded-xl bg-[#E0F7FF]/70 border border-[#BAE6FD] flex items-center gap-3 text-xs text-[#0369A1]">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#0284C7] shrink-0" />
                 <span>
-                  <strong>Academic Research Grounding:</strong> Engineering verified protocols aligned with Bureau of Indian Standards (BIS IS 10500:2012) and CPCB criteria.
+                  <strong>Reference Thresholds:</strong> Operational limits reference Bureau of Indian Standards (BIS IS 10500:2012) guidelines for indicative monitoring, supporting early awareness alongside standard laboratory testing.
                 </span>
               </div>
             </div>
@@ -549,112 +566,107 @@ export default function HomePage() {
       {/* =========================================================================
           4. HOW IT WORKS / SYSTEM ARCHITECTURE (DIRECTLY AFTER INDICATORS)
           ========================================================================= */}
-      <section id="how-it-works" className="py-20 lg:py-24 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16">
+      <section id="how-it-works" className="py-16 lg:py-20 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
               <span>System Architecture</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
-              End-to-End IoT & Early Warning Pipeline
+              How JalDrishti Works
             </h2>
-            <p className="text-sm text-[#475569] mt-3 leading-relaxed">
-              Engineered for continuous municipal operation: from physical probe voltage acquisition to automated resident early warning.
+            <p className="text-sm text-[#475569] mt-2.5 leading-relaxed">
+              Visual progression of the implemented telemetry pipeline from inline sensing to the citizen portal.
             </p>
           </div>
 
-          {/* Connected 4-Stage Architecture Pipeline */}
-          <div className="relative">
-            {/* Desktop Connecting Line */}
-            <div className="hidden md:block absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-[#BAE6FD] via-[#38BDF8] to-[#BAE6FD] -translate-y-12 z-0" />
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-              {/* Step 1: Probes */}
-              <div className="p-6 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-10 h-10 rounded-xl bg-[#0284C7] text-white font-bold text-sm flex items-center justify-center shadow-md shadow-[#0284C7]/20 font-mono">
-                      01
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7]">
-                      Probes & Sensing
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#1E293B]">IoT Sensor Ingestion</h3>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    Analog & digital probe array (pH, Turbidity optical sensor, TDS conductivity pins, DS18B20 temp) submerged in water flow.
-                  </p>
+          {/* Visual 4-Stage Architecture Flow */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Stage 1: Ready-Made Sensor Device */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 bg-[#F0FAFF] border border-[#BAE6FD]/70 group-hover:border-[#38BDF8] transition-colors">
+                  <Stage1SensorVisual className="w-full h-full" />
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#BAE6FD]/70 text-[11px] text-[#0284C7] font-semibold flex items-center gap-1.5">
-                  <ActivityIcon className="w-3.5 h-3.5 text-[#0284C7]" />
-                  <span>30s Calibrated Sampling</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
+                    Stage 1 • Hardware
+                  </span>
                 </div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1E293B]">Ready-Made Sensor Device</h3>
+                <p className="text-xs text-[#475569] mt-1.5 leading-relaxed">
+                  Factory-sealed inline probe collar installed in pipeline plumbing, continuously measuring pH, turbidity, TDS, and water temperature.
+                </p>
               </div>
-
-              {/* Step 2: ESP32 Edge */}
-              <div className="p-6 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-10 h-10 rounded-xl bg-[#0284C7] text-white font-bold text-sm flex items-center justify-center shadow-md shadow-[#0284C7]/20 font-mono">
-                      02
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7]">
-                      Edge Controller
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#1E293B]">ESP32-S3 Wi-Fi Gateway</h3>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    Microcontroller samples analog ADC voltages, applies calibration polynomial curves, signs payload with API key, and transmits over Wi-Fi.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#BAE6FD]/70 text-[11px] text-[#0284C7] font-semibold flex items-center gap-1.5">
-                  <SmartphoneIcon className="w-3.5 h-3.5 text-[#0284C7]" />
-                  <span>Secure HTTP/JSON Payload</span>
-                </div>
+              <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
+                <span>pH • Turbidity • TDS • Temp</span>
+                <span className="text-[#94A3B8] font-mono text-[10px]">01 →</span>
               </div>
+            </div>
 
-              {/* Step 3: Cloud & Alerts */}
-              <div className="p-6 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-10 h-10 rounded-xl bg-[#0284C7] text-white font-bold text-sm flex items-center justify-center shadow-md shadow-[#0284C7]/20 font-mono">
-                      03
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7]">
-                      Evaluation Engine
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#1E293B]">Threshold Engine & SMS</h3>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    Node.js backend validates telemetry, indexes into MongoDB, detects BIS parameter breaches, and dispatches debounced emergency SMS alerts.
-                  </p>
+            {/* Stage 2: Wi-Fi and Blynk Integration */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 bg-[#F0FAFF] border border-[#BAE6FD]/70 group-hover:border-[#38BDF8] transition-colors">
+                  <Stage2WifiBlynkVisual className="w-full h-full" />
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#BAE6FD]/70 text-[11px] text-amber-700 font-semibold flex items-center gap-1.5">
-                  <BellIcon className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Automated Debounced SMS</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
+                    Stage 2 • Connectivity
+                  </span>
                 </div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1E293B]">Wi-Fi &amp; Blynk Telemetry</h3>
+                <p className="text-xs text-[#475569] mt-1.5 leading-relaxed">
+                  ESP32-S3 microcontroller transmits readings over 2.4 GHz Wi-Fi through the configured Blynk IoT cloud and authenticated webhook path.
+                </p>
               </div>
+              <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
+                <span>2.4 GHz Wi-Fi • Webhook</span>
+                <span className="text-[#94A3B8] font-mono text-[10px]">02 →</span>
+              </div>
+            </div>
 
-              {/* Step 4: Citizen Portal */}
-              <div className="p-6 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-10 h-10 rounded-xl bg-[#0284C7] text-white font-bold text-sm flex items-center justify-center shadow-md shadow-[#0284C7]/20 font-mono">
-                      04
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DDF8E8] text-[#15803D]">
-                      Civic Portal & AI
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#1E293B]">Transparency & AI Vision</h3>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    Residents inspect live geospatial GIS station maps, historical parameter graphs, and submit water photos for Google Gemini AI visual screening.
-                  </p>
+            {/* Stage 3: Backend and Database */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 bg-[#F0FAFF] border border-[#BAE6FD]/70 group-hover:border-[#38BDF8] transition-colors">
+                  <Stage3BackendVisual className="w-full h-full" />
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#BAE6FD]/70 text-[11px] text-[#15803D] font-semibold flex items-center gap-1.5">
-                  <ShieldCheckIcon className="w-3.5 h-3.5 text-[#15803D]" />
-                  <span>Public Safety Dashboard</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
+                    Stage 3 • Backend
+                  </span>
                 </div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1E293B]">Backend &amp; Database</h3>
+                <p className="text-xs text-[#475569] mt-1.5 leading-relaxed">
+                  Node.js server verifies readings against BIS IS 10500 limits, triggers automated alerts, and securely persists records in MongoDB.
+                </p>
+              </div>
+              <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#15803D] font-semibold">
+                <span>Threshold Engine • MongoDB</span>
+                <span className="text-[#94A3B8] font-mono text-[10px]">03 →</span>
+              </div>
+            </div>
+
+            {/* Stage 4: Web Application */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 bg-[#F0FAFF] border border-[#BAE6FD]/70 group-hover:border-[#38BDF8] transition-colors">
+                  <Stage4WebAppVisual className="w-full h-full" />
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]">
+                    Stage 4 • Application
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1E293B]">Web Application</h3>
+                <p className="text-xs text-[#475569] mt-1.5 leading-relaxed">
+                  Citizen web application presents live telemetry readings, 4-parameter trend charts, active warnings, GIS station maps, and reports.
+                </p>
+              </div>
+              <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
+                <span>Trends • Maps • Alerts</span>
+                <span className="text-[#94A3B8] font-mono text-[10px]">04 ✓</span>
               </div>
             </div>
           </div>
@@ -662,212 +674,46 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          5. RESEARCH PAPERS & TECHNICAL STANDARDS (DIRECTLY AFTER ARCHITECTURE)
+          5. FAQ (MERGED STANDARDS & FREQUENTLY ASKED QUESTIONS)
           ========================================================================= */}
-      <section id="research" className="py-20 lg:py-24 bg-white border-b border-[#BAE6FD] scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+      <section id="faq" className="py-20 lg:py-24 bg-white border-b border-[#BAE6FD] scroll-mt-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" id="help">
+          <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
-              <span>Academic Foundations</span>
+              <span>Answers &amp; Guidelines</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
-              Research & Technical Standards
+              FAQ
             </h2>
             <p className="text-sm text-[#475569] mt-3 leading-relaxed">
-              Grounding IoT sensor acquisition, multi-variate threshold evaluation, and computer vision screening in scientific literature and statutory drinking water specifications.
+              Learn how JalDrishti works, what parameters and reference thresholds are monitored, and what citizens can explore with or without hardware.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" id="docs">
-            {/* BIS Standards Card */}
-            <div className="p-7 bg-[#F0FAFF] rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
-                  Standards Document
-                </span>
-                <h3 className="text-lg font-bold text-[#1E293B]">BIS IS 10500:2012 Standards</h3>
-                <p className="text-xs text-[#475569] leading-relaxed">
-                  National drinking water specification governing permissible limits for pH (6.5–8.5), Turbidity (≤5 NTU), and TDS (≤500 ppm). Configured directly inside JalDrishti threshold engine.
-                </p>
-                <div className="p-3 bg-white rounded-xl border border-[#BAE6FD] text-[11px] text-[#15803D] font-medium space-y-1">
-                  <div className="flex justify-between">
-                    <span>pH Permissible:</span>
-                    <span className="font-mono font-bold">6.5 — 8.5</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Turbidity Permissible:</span>
-                    <span className="font-mono font-bold">≤ 5.0 NTU</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>TDS Permissible:</span>
-                    <span className="font-mono font-bold">≤ 500 ppm</span>
-                  </div>
-                </div>
-              </div>
-              <a
-                href="#indicators"
-                className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] inline-flex items-center gap-1.5 pt-4"
+          <div className="space-y-3.5">
+            {faqs.map((faq, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-[#BAE6FD] overflow-hidden bg-white shadow-xs transition-all"
               >
-                <span>View Parameter Matrix</span>
-                <span>→</span>
-              </a>
-            </div>
-
-            {/* REST API Card */}
-            <div className="p-7 bg-[#F0FAFF] rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
-                  API Reference
-                </span>
-                <h3 className="text-lg font-bold text-[#1E293B]">RESTful Sensor Ingestion API</h3>
-                <p className="text-xs text-[#475569] leading-relaxed">
-                  Standardized JSON schema endpoints for ESP32-S3 ingestion (<code className="text-[#0284C7] font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#BAE6FD]">POST /api/sensor/readings</code>), station queries, and threshold configurations.
-                </p>
-                <div className="p-3 bg-white rounded-xl border border-[#BAE6FD] text-[11px] text-[#475569] space-y-1.5 font-mono">
-                  <p className="truncate text-[#0284C7] flex items-center gap-1.5">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-[#0284C7] shrink-0" />
-                    <span>Authenticated via X-API-KEY</span>
-                  </p>
-                  <p className="truncate text-[#15803D] flex items-center gap-1.5">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
-                    <span>JSON Schema Validation</span>
-                  </p>
-                  <p className="truncate text-[#475569] flex items-center gap-1.5">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-[#475569] shrink-0" />
-                    <span>Time-series MongoDB Storage</span>
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/reports"
-                className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] inline-flex items-center gap-1.5 pt-4"
-              >
-                <span>Access Reports & Exports</span>
-                <span>→</span>
-              </Link>
-            </div>
-
-            {/* AI Vision Model Card */}
-            <div className="p-7 bg-[#F0FAFF] rounded-2xl border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] hover:shadow-md transition-all flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]">
-                  AI Vision Model
-                </span>
-                <h3 className="text-lg font-bold text-[#1E293B]">Multimodal Water Screening</h3>
-                <p className="text-xs text-[#475569] leading-relaxed">
-                  Google Gemini Vision multimodal prompt engineering for preliminary surface inspection and citizen water sample validation (detecting visible discoloration or algal blooms).
-                </p>
-                <div className="p-3 bg-white rounded-xl border border-[#BAE6FD] text-[11px] text-[#15803D] space-y-1.5">
-                  <p className="flex items-center gap-1.5">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
-                    <span>Auxiliary Citizen Triage</span>
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
-                    <span>Discoloration & Turbidity Analysis</span>
-                  </p>
-                  <p className="text-[#64748B] italic pl-5">Non-statutory laboratory companion</p>
-                </div>
-              </div>
-              <Link
-                to="/citizen/image-screening"
-                className="text-xs font-bold text-[#15803D] hover:text-emerald-800 inline-flex items-center gap-1.5 pt-4"
-              >
-                <span>Try Image Screening</span>
-                <span>→</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          6. FACTS & CONTEXT & FAQ (DIRECTLY AFTER STANDARDS)
-          ========================================================================= */}
-      <section id="facts" className="py-20 lg:py-24 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
-              <span>Environmental Context & Facts</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
-              Water Quality Facts & Context
-            </h2>
-            <p className="text-sm text-[#475569] mt-3 leading-relaxed">
-              Verified operational statistics, sustainability principles, and practical knowledge regarding JalDrishti monitoring.
-            </p>
-          </div>
-
-          {/* 4 Verified Project Fact Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
-              <span className="text-3xl font-black text-[#0284C7] font-mono block mb-2">30s</span>
-              <h4 className="text-sm font-bold text-[#1E293B]">Continuous Telemetry Cycle</h4>
-              <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                Autonomous sensor probe sampling runs every 30 seconds, replacing weeks-long laboratory collection cycles.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
-              <span className="text-3xl font-black text-[#15803D] font-mono block mb-2">100%</span>
-              <h4 className="text-sm font-bold text-[#1E293B]">BIS IS 10500 Alignment</h4>
-              <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                All monitoring thresholds are directly calibrated to official Bureau of Indian Standards drinking water safety guidelines.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
-              <span className="text-3xl font-black text-[#0284C7] font-mono block mb-2">4 Core</span>
-              <h4 className="text-sm font-bold text-[#1E293B]">Multi-Variate Indicators</h4>
-              <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                Integrated tracking of pH, Turbidity, Total Dissolved Solids, and Water Temperature for holistic safety profiling.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
-              <span className="text-3xl font-black text-[#15803D] font-mono block mb-2">Instant</span>
-              <h4 className="text-sm font-bold text-[#1E293B]">Automated SMS Warning</h4>
-              <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">
-                Debounced emergency notifications dispatched to registered civic subscribers upon confirmed parameter breach.
-              </p>
-            </div>
-          </div>
-
-          {/* FAQ Sub-Section with ID #help for anchor navigation */}
-          <div className="max-w-4xl mx-auto" id="help">
-            <div className="text-center mb-8">
-              <h3 className="text-xl font-bold font-heading text-[#1E293B]">
-                Frequently Asked Questions
-              </h3>
-              <p className="text-xs text-[#64748B] mt-1">
-                Common questions regarding sensors, alert thresholds, and civic usage.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {faqs.map((faq, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-[#BAE6FD] overflow-hidden bg-white shadow-xs transition-all"
+                <button
+                  type="button"
+                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-[#1E293B] hover:bg-[#F0FAFF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] cursor-pointer"
+                  aria-expanded={activeFaq === idx}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-[#1E293B] hover:bg-[#F0FAFF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
-                  >
-                    <span>{faq.q}</span>
-                    <span className="text-[#0284C7] text-lg font-bold shrink-0">
-                      {activeFaq === idx ? '−' : '+'}
-                    </span>
-                  </button>
-                  {activeFaq === idx && (
-                    <div className="p-4 sm:p-5 pt-0 text-xs text-[#475569] leading-relaxed border-t border-[#BAE6FD]/60 bg-[#F0FAFF]/60">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  <span className="leading-snug">{faq.q}</span>
+                  <span className="w-6 h-6 rounded-full bg-[#E0F7FF] text-[#0284C7] flex items-center justify-center text-sm font-bold shrink-0">
+                    {activeFaq === idx ? '−' : '+'}
+                  </span>
+                </button>
+                {activeFaq === idx && (
+                  <div className="p-4 sm:p-5 pt-0 text-xs text-[#475569] leading-relaxed border-t border-[#BAE6FD]/60 bg-[#F0FAFF]/40 space-y-2">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>

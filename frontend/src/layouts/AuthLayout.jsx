@@ -16,13 +16,13 @@ export default function AuthLayout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#F0FAFF] text-[#334155] font-sans">
-      {/* Background Water/Mountain Landscape Visual with Preserved Visibility */}
+      {/* Background Approved Transparent Pipeline Water Flow Visual */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-transform duration-1000 opacity-80"
-        style={{ backgroundImage: `url('/images/hero-water.jpg')` }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-transform duration-1000"
+        style={{ backgroundImage: `url('/images/pipeline-water.png')` }}
       />
-      {/* Subtle Directional Pale Blue Scrim allowing natural landscape to shine through */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#E5F6FF]/35 via-transparent to-[#F0FAFF]/60 pointer-events-none" />
+      {/* Subtle Directional Dark-Blue Overlay keeping transparent pipeline & water stream clearly visible */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/35 via-slate-900/15 to-slate-950/45 pointer-events-none" />
 
       {/* 1. Compact Authentication Header */}
       <header className="relative z-20 border-b border-[#BAE6FD] bg-white/85 backdrop-blur-md">

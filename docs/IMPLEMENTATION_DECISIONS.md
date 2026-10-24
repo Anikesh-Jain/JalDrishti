@@ -373,5 +373,43 @@ This document records the architectural, design, and technical decisions made du
 * **Rationale:** Ensures genuine inquiry persistence, spam protection, administrative oversight, and zero fabricated success states.
 
 ---
-*Signed by Lead Software Architect — Baseline Architectural Decisions & Follow-Up Implementation Approved.*
+### DEC-36: Ready-Made Hardware Onboarding, Anti-Squatting Claim Protocol & 5-State Diagnostic Engine
+* **Context:** JalDrishti introduces personal inline pipeline monitors for citizens. The integration required resolving five critical architectural challenges:
+  1. Preserving the user experience for non-hardware citizens without forcing device purchase.
+  2. Preventing malicious node-claiming/squatting without requiring complex hardware-side public key infrastructure.
+  3. Protecting residential Wi-Fi credentials from cloud interception or centralized database compromise.
+  4. Eliminating fabricated connection states and providing accurate, timestamped diagnostics.
+  5. Integrating Blynk IoT cloud telemetry alongside direct REST ingestion.
+* **Decision:**
+  - **Non-Hardware Citizen Experience:** Implemented an opt-in modal on first visit post-signup. Citizens selecting "No" retain complete access to AI image-screening, regional station map, and water trends. Their preference is persisted in `user.hardwareOnboarding` and can be changed in `ProfilePage.jsx`.
+  - **Physical Claim Code Verification:** SensorNode records include `claimCodeHash` (bcrypt). To claim a device via `POST /api/hardware/claim`, the user must provide the physical voucher code found on the packaging. Attempting to claim an already owned device returns HTTP 409 Conflict. Unpairing (`POST /api/hardware/unpair`) frees the node.
+  - **Zero Cloud Wi-Fi Credential Transmission:** The cloud backend never accepts or stores Wi-Fi passwords. Instead, devices host a local SoftAP web portal (`192.168.4.1`) for direct local configuration. The backend only tracks the configured SSID for identification and diagnostics via `POST /api/hardware/wifi-provision`.
+  - **5-State Connection Diagnostics Engine:** To ensure zero fake data, the status evaluates strictly from real database timestamps:
+    1. `not configured`: User has no claimed node.
+    2. `awaiting Wi-Fi setup`: Node claimed but unprovisioned.
+    3. `offline`: Node has not checked in or transmitted telemetry within the last 15 minutes.
+    4. `connected but not sending readings`: Node pinged recently, but sensor telemetry is absent or older than 15 minutes.
+    5. `receiving data`: Valid telemetry received within the last 15 minutes.
+  - **Blynk Telemetry Integration:** Created `POST /api/hardware/blynk-webhook` allowing Blynk webhooks or virtual pin automation to relay pH, Turbidity, TDS, and Temperature directly into the JalDrishti MongoDB ingestion engine using device token validation.
+* **Rationale:** Maximizes citizen safety, protects network privacy, provides uncompromised security against device spoofing, and guarantees transparent diagnostics.
 
+---
+### DEC-37: Removal of Standalone Hardware Navigation & Full Consolidation into Citizen Onboarding Flow
+* **Context:** The previous revision introduced a standalone Hardware page (`/hardware`), sidebar navigation item, and dashboard promotional banners. This violated the citizen user journey requirement, which specifies that device onboarding must be an integrated modal/flow rather than a standalone section of the application.
+* **Decision:**
+  - **Removed Standalone Hardware Page & Sidebar Item:** Removed the Hardware entry from `Sidebar.jsx`, deleted the standalone `HardwarePage.jsx`, and redirected legacy `/hardware` URLs to the main citizen dashboard (`/citizen`).
+  - **Removed Promotional Dashboard Widgets:** Removed dashboard cards that existed solely to push users to a separate `/hardware` route. Non-hardware citizens see the pristine community monitoring dashboard directly without banner bloat.
+  - **Consolidated 4-Step Onboarding Modal:** Enhanced `HardwareOnboardingModal.jsx` to house the entire integrated device onboarding flow:
+    1. *Initial Prompt:* Asks whether the citizen owns a ready-made JalDrishti sensor device ("Yes", "No", "Not sure").
+    2. *Non-Hardware Path:* Explains that citizens retain full access to AI water image screening and community station telemetry, then routes directly to dashboard or screening without barrier.
+    3. *Not Sure Path:* Explains the factory-sealed inline appliance (no soldering or wire assembly required) and allows choosing to proceed with setup or continue without device.
+    4. *Integrated Device Setup:* Guides through:
+       - **Step 1 (Pipeline Install):** Standard 3/4" pipe fitting, water flow arrow alignment, and power adapter plug-in (strictly zero wire assembly).
+       - **Step 2 (Device Claiming):** Physical claim secret validation with anti-squatting ownership locking via `POST /api/hardware/claim`.
+       - **Step 3 (Wi-Fi Provisioning):** Clear instructions for SoftAP web portal (`192.168.4.1`) and Blynk IoT app BLE provisioning, plus cloud SSID registration via `POST /api/hardware/wifi-provision`.
+       - **Step 4 (Live Verification):** 5-state diagnostics, Blynk cloud handshake status, and real calibrated telemetry readings (pH, Turbidity, TDS, Temp).
+  - **Resume Incomplete Setup & Profile Integration:** If a citizen indicates "Yes" but leaves before claiming a unit, the application detects the incomplete setup upon next login and prompts them to resume seamlessly. Furthermore, citizens can revisit diagnostics or launch device setup at any time from their Profile page without introducing a separate navigation section.
+* **Rationale:** Aligns precisely with user expectations for streamlined onboarding, maintains zero navigation clutter, keeps the UI cohesive with the pale-blue/aqua aesthetic, and preserves all backend security, claiming, Wi-Fi provisioning, and diagnostics protocols.
+
+---
+*Signed by Lead Software Architect — Baseline Architectural Decisions & Follow-Up Implementation Approved.*

@@ -101,21 +101,23 @@ class TestContext {
         headers: { ...(options.headers || {}) }
       };
 
+      const effectiveBody = requestBody !== null ? requestBody : (options.body !== undefined ? options.body : null);
+
       let bodyData = null;
-      if (requestBody !== null) {
-        if (Buffer.isBuffer(requestBody)) {
-          bodyData = requestBody;
+      if (effectiveBody !== null) {
+        if (Buffer.isBuffer(effectiveBody)) {
+          bodyData = effectiveBody;
           if (!reqOptions.headers['Content-Length']) {
             reqOptions.headers['Content-Length'] = bodyData.length;
           }
-        } else if (typeof requestBody === 'object') {
-          bodyData = JSON.stringify(requestBody);
+        } else if (typeof effectiveBody === 'object') {
+          bodyData = JSON.stringify(effectiveBody);
           if (!reqOptions.headers['Content-Type']) {
             reqOptions.headers['Content-Type'] = 'application/json';
           }
           reqOptions.headers['Content-Length'] = Buffer.byteLength(bodyData);
-        } else if (typeof requestBody === 'string') {
-          bodyData = requestBody;
+        } else if (typeof effectiveBody === 'string') {
+          bodyData = effectiveBody;
           if (!reqOptions.headers['Content-Length']) {
             reqOptions.headers['Content-Length'] = Buffer.byteLength(bodyData);
           }
@@ -136,6 +138,7 @@ class TestContext {
             statusCode: res.statusCode,
             headers: res.headers,
             body: json,
+            data: json,
             rawBody: rawData
           });
         });

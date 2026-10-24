@@ -147,6 +147,7 @@ export const api = {
     google: (credential) => request('/auth/google', { method: 'POST', body: { credential } }),
     getMe: (token) => request('/auth/me', { method: 'GET', token }),
     updateProfile: (data) => request('/auth/profile', { method: 'PUT', body: data }),
+    updateOnboarding: (status) => request('/auth/onboarding', { method: 'PUT', body: { status } }),
     forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),
     resetPassword: (data) => request('/auth/reset-password', { method: 'POST', body: data })
   },
@@ -271,6 +272,15 @@ export const api = {
       if (params.nodeId) query.set('nodeId', params.nodeId);
       const qs = query.toString();
       return request(`/sensor/readings/history${qs ? `?${qs}` : ''}`);
+    },
+    getHistoricalReadings: (params = {}) => {
+      const query = new URLSearchParams();
+      if (params.from) query.set('from', params.from);
+      if (params.to) query.set('to', params.to);
+      if (params.limit) query.set('limit', params.limit);
+      if (params.nodeId) query.set('nodeId', params.nodeId);
+      const qs = query.toString();
+      return request(`/sensor/readings/history${qs ? `?${qs}` : ''}`);
     }
   },
 
@@ -357,6 +367,31 @@ export const api = {
     retryEmail: (id, replyId) => request(`/contact/${encodeURIComponent(id)}/reply/${encodeURIComponent(replyId)}/retry`, {
       method: 'POST'
     })
+  },
+
+  // Citizen Ready-Made Hardware Management & Onboarding
+  hardware: {
+    getMyDevice: (params = {}) => {
+      const query = new URLSearchParams();
+      if (params.nodeId) query.set('nodeId', params.nodeId);
+      const qs = query.toString();
+      return request(`/hardware/my-device${qs ? `?${qs}` : ''}`);
+    },
+    claim: (data) => request('/hardware/claim', { method: 'POST', body: data }),
+    unpair: () => request('/hardware/unpair', { method: 'POST' }),
+    provisionWifi: (data) => request('/hardware/wifi-provision', { method: 'POST', body: data }),
+    getBlynkStatus: (params = {}) => {
+      const query = new URLSearchParams();
+      if (params.nodeId) query.set('nodeId', params.nodeId);
+      const qs = query.toString();
+      return request(`/hardware/blynk-status${qs ? `?${qs}` : ''}`);
+    },
+    getDiagnostics: (params = {}) => {
+      const query = new URLSearchParams();
+      if (params.nodeId) query.set('nodeId', params.nodeId);
+      const qs = query.toString();
+      return request(`/hardware/diagnostics${qs ? `?${qs}` : ''}`);
+    }
   }
 };
 

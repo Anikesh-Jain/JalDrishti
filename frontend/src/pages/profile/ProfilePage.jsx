@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../layouts/AdminLayout';
 import CitizenLayout from '../../layouts/CitizenLayout';
@@ -12,10 +13,11 @@ import { ShieldCheckIcon } from '../../components/common/Icons';
  * - Read-only role display with RBAC explanation
  * - Editable personal info (Name, Phone for SMS, Organization)
  * - Credential security management (Password change)
+ * - Hardware device ownership preference & linked unit
  * - Persists updates directly to MongoDB via PUT /api/auth/profile
  */
 export default function ProfilePage() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, updateHardwareOnboarding, openDeviceSetup } = useAuth();
   const isAdmin = user?.role === 'Admin';
   const Layout = isAdmin ? AdminLayout : CitizenLayout;
 
@@ -35,14 +37,40 @@ export default function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Hardware Device preference state
+  const [hardwareStatus, setHardwareStatus] = useState(user?.hardwareOnboarding?.status || 'pending');
+  const [hardwareSaving, setHardwareSaving] = useState(false);
+  const [hardwareSuccess, setHardwareSuccess] = useState('');
+  const [hardwareError, setHardwareError] = useState('');
+
   // Synchronize state when user changes
   useEffect(() => {
     if (user) {
       setName(user.name || '');
       setPhone(user.phone || '');
       setOrganization(user.organization || 'JalDrishti Water Authority');
+      setHardwareStatus(user.hardwareOnboarding?.status || 'pending');
     }
   }, [user]);
+
+  const handleHardwareSave = async (status) => {
+    setHardwareSaving(true);
+    setHardwareSuccess('');
+    setHardwareError('');
+    try {
+      await updateHardwareOnboarding(status);
+      setHardwareStatus(status);
+      setHardwareSuccess('Hardware monitoring preference updated.');
+      setTimeout(() => setHardwareSuccess(''), 4000);
+      if (status === 'yes') {
+        openDeviceSetup(user?.assignedNodeId ? 'verify' : 'install');
+      }
+    } catch (err) {
+      setHardwareError(err.message || 'Failed to update preference');
+    } finally {
+      setHardwareSaving(false);
+    }
+  };
 
   // Handle personal information submission
   const handleProfileSubmit = async (e) => {
@@ -307,7 +335,79 @@ export default function ProfilePage() {
             </form>
           </div>
 
-          {/* Section 2: Password & Credential Security */}
+          {/* Section 2: Ready-Made Hardware Monitoring Device */}
+          <div className="bg-white rounded-2xl border border-[#BAE6FD] p-6 sm:p-8 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">JalDrishti Monitoring Device</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Declare or update whether you own a ready-made inline pipeline sensor monitor
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openDeviceSetup(user?.assignedNodeId ? 'verify' : 'install')}
+                className="text-xs font-bold text-[#0284C7] hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+              >
+                {user?.assignedNodeId ? 'Device Diagnostics & Readings →' : 'Launch Device Setup →'}
+              </button>
+            </div>
+
+            {hardwareSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+                {hardwareSuccess}
+              </div>
+            )}
+            {hardwareError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800">
+                {hardwareError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { value: 'yes', label: 'Yes, I have a device', desc: 'Ready-made pipeline unit' },
+                { value: 'no', label: "No, I don't have one", desc: 'Using AI image screening' },
+                { value: 'not_sure', label: 'Not sure / Decide later', desc: 'Exploring features' }
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  disabled={hardwareSaving}
+                  onClick={() => handleHardwareSave(opt.value)}
+                  className={`p-3.5 rounded-xl border text-left transition-all text-xs ${
+                    hardwareStatus === opt.value
+                      ? 'border-[#0284C7] bg-[#F0FAFF] font-bold text-[#0284C7] ring-1 ring-[#0284C7]'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span>{opt.label}</span>
+                    {hardwareStatus === opt.value && <span className="text-[10px]">✓</span>}
+                  </div>
+                  <span className="text-[10px] text-slate-400 block font-normal">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+              <div>
+                <span className="text-slate-500">Linked Device ID:</span>{' '}
+                <strong className="text-slate-900 font-mono">
+                  {user?.assignedNodeId || 'None (Unlinked)'}
+                </strong>
+              </div>
+              <button
+                type="button"
+                onClick={() => openDeviceSetup(user?.assignedNodeId ? 'verify' : 'install')}
+                className="px-3 py-1.5 rounded-lg bg-[#0284C7] text-white font-bold text-[11px] hover:bg-[#0369A1] transition-colors cursor-pointer"
+              >
+                {user?.assignedNodeId ? 'View Live Telemetry' : (hardwareStatus === 'yes' ? 'Resume Device Setup' : 'Set Up Device')}
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Password & Credential Security */}
           <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
             <h3 className="text-base font-bold text-slate-900 mb-1">Security & Password</h3>
             <p className="text-xs text-slate-500 mb-6">

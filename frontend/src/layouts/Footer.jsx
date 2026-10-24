@@ -92,7 +92,7 @@ export default function Footer() {
               <li><a href="/#docs" className="hover:text-[#0284C7] transition-colors">Documentation</a></li>
               <li><a href="/#help" className="hover:text-[#0284C7] transition-colors">User Guide</a></li>
               <li><a href="/#docs" className="hover:text-[#0284C7] transition-colors">API Reference</a></li>
-              <li><a href="/#research" className="hover:text-[#0284C7] transition-colors">Research Papers</a></li>
+              <li><a href="/#faq" className="hover:text-[#0284C7] transition-colors">FAQ</a></li>
             </ul>
           </div>
 

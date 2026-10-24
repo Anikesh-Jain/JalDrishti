@@ -19,6 +19,7 @@ router.post('/reset-password', passwordResetRateLimiter, authController.resetPas
 // Authenticated User Identity Endpoint
 router.get('/me', authenticate, authController.getMe);
 router.put('/profile', authenticate, authController.updateProfile);
+router.put('/onboarding', authenticate, authController.updateOnboarding);
 
 // Protected RBAC Verification Endpoints (Phase 5 / TC-10)
 router.get('/admin-test', authenticate, requireRole(['Admin']), (req, res) => {

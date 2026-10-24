@@ -49,6 +49,53 @@ const sensorNodeSchema = new mongoose.Schema(
     lastSeen: {
       type: Date,
       default: null
+    },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    claimCodeHash: {
+      type: String,
+      default: null
+    },
+    blynkIntegration: {
+      configured: {
+        type: Boolean,
+        default: false
+      },
+      templateId: {
+        type: String,
+        default: null
+      },
+      deviceName: {
+        type: String,
+        default: null
+      },
+      lastSyncAt: {
+        type: Date,
+        default: null
+      },
+      syncStatus: {
+        type: String,
+        enum: ['connected', 'offline', 'disabled'],
+        default: 'disabled'
+      }
+    },
+    wifiProvisioning: {
+      ssid: {
+        type: String,
+        default: null
+      },
+      configuredAt: {
+        type: Date,
+        default: null
+      },
+      status: {
+        type: String,
+        enum: ['unprovisioned', 'provisioned', 'failed'],
+        default: 'unprovisioned'
+      }
     }
   },
   {

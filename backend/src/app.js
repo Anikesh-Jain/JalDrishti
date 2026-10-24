@@ -115,13 +115,14 @@ app.use('/api/users', userRoutes);
 const contactRoutes = require('./routes/contactRoutes');
 app.use('/api/contact', contactRoutes);
 
+// Citizen Hardware Onboarding & Ready-Made Device Routes
+const hardwareRoutes = require('./routes/hardwareRoutes');
+app.use('/api/hardware', hardwareRoutes);
+
 // Modular 404 handler for unmatched routes
-
-
 app.use(notFoundHandler);
 
 // Modular Centralized Error Handler (suppresses stack traces and sensitive details)
 app.use(errorHandler);
 
 module.exports = app;
-

@@ -68,6 +68,26 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpires: {
       type: Date,
       default: null
+    },
+    hardwareOnboarding: {
+      status: {
+        type: String,
+        enum: {
+          values: ['yes', 'no', 'not_sure', 'pending'],
+          message: '{VALUE} is not a valid hardware onboarding status'
+        },
+        default: 'pending'
+      },
+      completedAt: {
+        type: Date,
+        default: null
+      }
+    },
+    assignedNodeId: {
+      type: String,
+      default: null,
+      trim: true,
+      uppercase: true
     }
   },
   {

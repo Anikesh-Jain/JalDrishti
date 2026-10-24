@@ -68,8 +68,12 @@ export default function App() {
           <Route path="/alerts" element={<Navigate to="/citizen/alerts" replace />} />
           <Route path="/image-screening" element={<Navigate to="/citizen/image-screening" replace />} />
           
-          {/* Devices / Hardware Topology */}
+          {/* Station Devices Topology */}
           <Route path="/devices" element={<RoleRoute allowedRoles={['Citizen', 'Admin']}><DevicesPage /></RoleRoute>} />
+
+          {/* Legacy /hardware redirects to citizen dashboard */}
+          <Route path="/hardware" element={<Navigate to="/citizen" replace />} />
+          <Route path="/citizen/hardware" element={<Navigate to="/citizen" replace />} />
 
           {/* Reports (shared for Citizen and Admin) */}
           <Route path="/reports" element={<RoleRoute allowedRoles={['Citizen', 'Admin']}><ReportsPage /></RoleRoute>} />

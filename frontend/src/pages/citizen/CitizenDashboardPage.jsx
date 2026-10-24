@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceLine,
   PieChart,
   Pie,
   Cell
@@ -30,20 +31,29 @@ import {
 } from '../../components/common/Icons';
 
 /**
- * Custom Recharts Tooltip for Overview Line Chart
+ * Custom Recharts Tooltip for Overview Line Chart (Restored)
+ * Displays distinct parameter values and corresponding measurement units.
  */
 function OverviewTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
+    const units = {
+      pH: '',
+      Turbidity: ' NTU',
+      TDS: ' ppm',
+      Temperature: ' °C'
+    };
     return (
-      <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-3.5 rounded-xl shadow-xl text-xs space-y-1.5 min-w-[160px]">
+      <div className="bg-white/95 backdrop-blur-md border border-[#BAE6FD] p-3.5 rounded-xl shadow-xl text-xs space-y-1.5 min-w-[170px]">
         <p className="font-semibold text-slate-500 border-b border-slate-100 pb-1">{label}</p>
         {payload.map((entry) => (
           <div key={entry.name} className="flex items-center justify-between gap-4">
-            <span className="flex items-center gap-1.5 text-slate-600">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="flex items-center gap-1.5 text-slate-600 font-medium">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
               {entry.name}:
             </span>
-            <span className="font-mono font-bold text-slate-900">{entry.value}</span>
+            <span className="font-mono font-bold text-slate-900">
+              {entry.value !== null && entry.value !== undefined ? `${entry.value}${units[entry.name] ?? ''}` : '—'}
+            </span>
           </div>
         ))}
       </div>
@@ -69,29 +79,40 @@ export default function CitizenDashboardPage() {
   const [totalReadingsCount, setTotalReadingsCount] = useState(50);
   const [alertsList, setAlertsList] = useState([]);
 
-  // Fetch trend data and stats
+  // Fetch trend data and stats using real sensor history
   useEffect(() => {
     let mounted = true;
     async function fetchDashboardAnalytics() {
       try {
-        const historyRes = await api.sensor.getHistoricalReadings({ limit: 48 });
+        const now = Date.now();
+        let fromDate;
+        if (timeRange === '24H') fromDate = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+        else if (timeRange === '7D') fromDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+        else fromDate = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        const historyRes = await api.sensor.getHistoricalReadings({ from: fromDate, limit: 100 });
         if (mounted && historyRes && historyRes.data) {
-          const formatted = historyRes.data.map((r, idx) => {
+          const formatted = historyRes.data.map((r) => {
             const d = new Date(r.timestamp);
-            const timeLabel = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeLabel = timeRange === '24H'
+              ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
             return {
               time: timeLabel,
-              pH: Number((r.pH || 7.2).toFixed(2)),
-              TDS: Math.round(r.tds || 120),
-              Turbidity: Number((r.turbidity || 2.1).toFixed(2)),
-              Temperature: Number((r.temperature || 22.4).toFixed(1))
+              pH: typeof r.pH === 'number' && Number.isFinite(r.pH) ? Number(r.pH.toFixed(2)) : null,
+              TDS: typeof r.tds === 'number' && Number.isFinite(r.tds) ? Math.round(r.tds) : null,
+              Turbidity: typeof r.turbidity === 'number' && Number.isFinite(r.turbidity) ? Number(r.turbidity.toFixed(2)) : null,
+              Temperature: typeof r.temperature === 'number' && Number.isFinite(r.temperature) ? Number(r.temperature.toFixed(1)) : null,
+              overallStatus: r.overallStatus || 'Safe'
             };
           });
-          setTrendData(formatted.length > 0 ? formatted : generateMockTrendData());
-          setTotalReadingsCount(Math.max(historyRes.data.length, 24591));
+          setTrendData(formatted);
+          setTotalReadingsCount(historyRes.data.length);
+        } else if (mounted) {
+          setTrendData([]);
         }
       } catch {
-        if (mounted) setTrendData(generateMockTrendData());
+        if (mounted) setTrendData([]);
       }
 
       try {
@@ -118,17 +139,6 @@ export default function CitizenDashboardPage() {
       mounted = false;
     };
   }, [timeRange]);
-
-  function generateMockTrendData() {
-    const times = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
-    return times.map((t, i) => ({
-      time: t,
-      pH: Number((7.1 + Math.sin(i) * 0.4).toFixed(2)),
-      TDS: Math.round(110 + Math.sin(i * 1.5) * 35),
-      Turbidity: Number((1.8 + Math.cos(i) * 0.7).toFixed(2)),
-      Temperature: Number((22.0 + Math.sin(i) * 1.2).toFixed(1))
-    }));
-  }
 
   // Water Quality Status Distribution (Donut Chart matching reference UI)
   const statusDistribution = [
@@ -168,6 +178,7 @@ export default function CitizenDashboardPage() {
         {error && (
           <ErrorState message={error} onRetry={refresh} />
         )}
+
 
         {/* 2. Four Stat Cards matching reference UI exactly */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -240,79 +251,139 @@ export default function CitizenDashboardPage() {
 
         {/* 3. Charts Section matching reference UI */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Chart: Water Quality Overview (8 cols) */}
-          <div className="lg:col-span-8 p-6 rounded-2xl bg-white border border-slate-200/80 shadow-card">
+          {/* Left Chart: Water Quality Overview - One Combined Multi-Parameter Chart (8 cols) */}
+          <div className="lg:col-span-8 p-6 rounded-2xl bg-white border border-[#BAE6FD] shadow-card flex flex-col justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-bold text-slate-900">Water Quality Overview</h3>
-                <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Combined multi-parameter historical telemetry trend
+                </p>
+                <div className="flex flex-wrap items-center gap-3.5 mt-2 text-xs">
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7]" />
                     pH
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
+                    Turbidity (NTU)
+                  </span>
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" />
                     TDS (ppm)
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                    Turbidity (NTU)
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                    Temperature (°C)
                   </span>
                 </div>
               </div>
 
-              {/* Time Range Toggles matching reference [24H] [7D] [30D] */}
-              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-                {['24H', '7D', '30D'].map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setTimeRange(range)}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                      timeRange === range
-                        ? 'bg-[#0284C7] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {range}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3">
+                {/* Time Range Toggles [24H] [7D] [30D] */}
+                <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                  {['24H', '7D', '30D'].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setTimeRange(range)}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        timeRange === range
+                          ? 'bg-[#0284C7] text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+
+                <Link
+                  to="/citizen/trends"
+                  className="text-xs font-bold text-[#0284C7] hover:underline whitespace-nowrap"
+                >
+                  View All Trends →
+                </Link>
               </div>
             </div>
 
-            {/* Line Chart Container */}
-            <div className="h-64 sm:h-72 w-full pt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} domain={[0, 'auto']} />
-                  <Tooltip content={<OverviewTooltip />} />
-                  <Line
-                    type="monotone"
-                    dataKey="pH"
-                    stroke="#0284C7"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: '#0284C7' }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="TDS"
-                    stroke="#F59E0B"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: '#F59E0B' }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Turbidity"
-                    stroke="#EF4444"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: '#EF4444' }}
-                    activeDot={{ r: 5 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            {/* Combined Line Chart Container */}
+            <div className="h-72 sm:h-80 w-full pt-4">
+              {trendData.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  No telemetry recorded for the selected time range
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData} margin={{ top: 12, right: 15, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    {/* Left Y-Axis for pH, Turbidity, and Temperature */}
+                    <YAxis
+                      yAxisId="left"
+                      stroke="#94a3b8"
+                      fontSize={11}
+                      tickLine={false}
+                      domain={[0, 45]}
+                      label={{ value: 'pH / NTU / °C', angle: -90, position: 'insideLeft', offset: 12, fill: '#64748b', fontSize: 10 }}
+                    />
+                    {/* Right Y-Axis for TDS */}
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="#059669"
+                      fontSize={11}
+                      tickLine={false}
+                      domain={[0, 'auto']}
+                      label={{ value: 'TDS (ppm)', angle: 90, position: 'insideRight', offset: 12, fill: '#059669', fontSize: 10 }}
+                    />
+                    <Tooltip content={<OverviewTooltip />} />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="pH"
+                      name="pH"
+                      stroke="#0284C7"
+                      strokeWidth={2.5}
+                      dot={{ r: 2.5, fill: '#0284C7' }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="Turbidity"
+                      name="Turbidity"
+                      stroke="#D97706"
+                      strokeWidth={2}
+                      dot={{ r: 2.5, fill: '#D97706' }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="TDS"
+                      name="TDS"
+                      stroke="#059669"
+                      strokeWidth={2.5}
+                      dot={{ r: 2.5, fill: '#059669' }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="Temperature"
+                      name="Temperature"
+                      stroke="#EF4444"
+                      strokeWidth={2}
+                      dot={{ r: 2.5, fill: '#EF4444' }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 

@@ -20,7 +20,7 @@ const register = async (req, res) => {
       });
     }
 
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, hardwareStatus } = req.body;
 
     // Validate inputs
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -54,13 +54,23 @@ const register = async (req, res) => {
     // Hash password with bcrypt
     const passwordHash = await hashPassword(password);
 
+    // Build onboarding state if provided at registration
+    let hardwareOnboarding = { status: 'pending', completedAt: null };
+    if (hardwareStatus && ['yes', 'no', 'not_sure'].includes(hardwareStatus)) {
+      hardwareOnboarding = {
+        status: hardwareStatus,
+        completedAt: new Date()
+      };
+    }
+
     // Public registration strictly defaults to non-privileged 'Citizen' role
     const newUser = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       passwordHash,
       role: 'Citizen',
-      phone: phone && typeof phone === 'string' ? phone.trim() : null
+      phone: phone && typeof phone === 'string' ? phone.trim() : null,
+      hardwareOnboarding
     });
 
     // Generate signed JWT
@@ -77,6 +87,10 @@ const register = async (req, res) => {
         email: newUser.email,
         role: newUser.role,
         phone: newUser.phone,
+        status: newUser.status,
+        organization: newUser.organization,
+        hardwareOnboarding: newUser.hardwareOnboarding,
+        assignedNodeId: newUser.assignedNodeId,
         createdAt: newUser.createdAt
       },
       token
@@ -162,7 +176,9 @@ const login = async (req, res) => {
         status: user.status,
         lastLogin: user.lastLogin,
         organization: user.organization,
-        avatar: user.avatar
+        avatar: user.avatar,
+        hardwareOnboarding: user.hardwareOnboarding,
+        assignedNodeId: user.assignedNodeId
       },
       token
     });
@@ -261,7 +277,9 @@ const googleAuth = async (req, res) => {
         status: user.status,
         lastLogin: user.lastLogin,
         organization: user.organization,
-        avatar: user.avatar
+        avatar: user.avatar,
+        hardwareOnboarding: user.hardwareOnboarding,
+        assignedNodeId: user.assignedNodeId
       },
       token
     });
@@ -308,6 +326,20 @@ const updateProfile = async (req, res) => {
       user.avatar = avatar;
     }
 
+    if (req.body.hardwareStatus && ['yes', 'no', 'not_sure'].includes(req.body.hardwareStatus)) {
+      user.hardwareOnboarding = {
+        status: req.body.hardwareStatus,
+        completedAt: new Date()
+      };
+    } else if (req.body.hardwareOnboarding && typeof req.body.hardwareOnboarding === 'object') {
+      if (req.body.hardwareOnboarding.status && ['yes', 'no', 'not_sure'].includes(req.body.hardwareOnboarding.status)) {
+        user.hardwareOnboarding = {
+          status: req.body.hardwareOnboarding.status,
+          completedAt: new Date()
+        };
+      }
+    }
+
     // Handle password update if requested
     if (newPassword) {
       if (typeof newPassword !== 'string' || newPassword.length < 8) {
@@ -339,7 +371,9 @@ const updateProfile = async (req, res) => {
         status: user.status,
         lastLogin: user.lastLogin,
         organization: user.organization,
-        avatar: user.avatar
+        avatar: user.avatar,
+        hardwareOnboarding: user.hardwareOnboarding,
+        assignedNodeId: user.assignedNodeId
       }
     });
   } catch (error) {
@@ -387,7 +421,9 @@ const demoLogin = async (req, res) => {
         status: user.status,
         lastLogin: user.lastLogin,
         organization: user.organization,
-        avatar: user.avatar
+        avatar: user.avatar,
+        hardwareOnboarding: user.hardwareOnboarding,
+        assignedNodeId: user.assignedNodeId
       },
       token
     });
@@ -510,6 +546,50 @@ const resetPassword = async (req, res) => {
   }
 };
 
+/**
+ * Update hardware onboarding preference for authenticated user
+ * PUT /api/auth/onboarding
+ */
+const updateOnboarding = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['yes', 'no', 'not_sure'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be one of: yes, no, not_sure' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.hardwareOnboarding = {
+      status,
+      completedAt: new Date()
+    };
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Hardware onboarding preference saved successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        status: user.status,
+        lastLogin: user.lastLogin,
+        organization: user.organization,
+        avatar: user.avatar,
+        hardwareOnboarding: user.hardwareOnboarding,
+        assignedNodeId: user.assignedNodeId
+      }
+    });
+  } catch (error) {
+    console.error('[AuthController UpdateOnboarding Error]:', error.message);
+    return res.status(500).json({ error: 'Failed to update onboarding preference' });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -517,6 +597,7 @@ module.exports = {
   googleAuth,
   getMe,
   updateProfile,
+  updateOnboarding,
   forgotPassword,
   resetPassword
 };

@@ -1088,14 +1088,52 @@ An end-to-end user experience and operational review conducted on October 9, 202
     - Production Build: Succeeded cleanly in 26.73s (`npm run build`).
     - Browser Evidence: Verified all workflows with screenshots (`login_glassmorphism_verified_1791653324395.png`, `forgot_password_verified_1791653384041.png`, `citizen_settings_verified_1791653455791.png`, `contact_us_submitted_1791653656266.png`, `admin_inquiries_verified_1791653987962.png`).
 
+---
 
+## Phase 26: Ready-Made Hardware Onboarding & Dedicated Hardware Section
 
+### 1. Architectural Scope & Principles
+- **Ready-Made Physical Appliance Invariant:** JalDrishti uses factory-sealed, ready-made inline pipeline monitors (ESP32-S3 + industrial flow cell with 3/4" BSP/NPT threads). Citizens do NOT assemble electronics, breadboards, GPIOs, or wire splicing. Citizen responsibilities are strictly confined to mechanical installation, in-app Wi-Fi provisioning, account claiming via physical secret, and telemetry monitoring.
+- **Strict Anti-Spoofing & Security:** Device claiming requires physical claim secret verification (`claimCodeHash` via bcrypt/SHA-256). Devices cannot be claimed without the physical code, and already claimed devices reject subsequent pairing attempts with HTTP 409 Conflict.
+- **Wi-Fi Password Privacy:** Wi-Fi credentials are never transmitted to or stored on the cloud server. The guided flow uses direct device SoftAP (`192.168.4.1`) for physical provisioning; cloud backend only records the network SSID for diagnostic reference.
+- **Honest Connection Diagnostics:** System implements a 5-state diagnostic engine distinguishing `not configured`, `awaiting Wi-Fi setup`, `offline`, `connected but not sending readings`, and `receiving data`. Real timestamps are always displayed with zero fabricated mock telemetry.
 
+### 2. Backend Implementation
+- **Data Models:**
+  - `User.js`: Added `hardwareOnboarding` (`status`: `'yes' | 'no' | 'not_sure' | 'pending'`, `completedAt`) and `assignedNodeId`.
+  - `SensorNode.js`: Added `ownerId` (ref: `User`), `claimCodeHash`, `blynkIntegration` (`configured`, `templateId`, `deviceName`, `lastSyncAt`, `syncStatus`), and `wifiProvisioning` (`ssid`, `configuredAt`, `status`).
+- **Security Utilities (`deviceKey.js`):** Added `hashClaimCode` and `verifyClaimCode` with fallback support for cryptographic testing.
+- **Endpoints (`hardwareController.js` & `hardwareRoutes.js` at `/api/hardware`):**
+  - `GET /api/hardware/my-device`: Returns claimed device, real telemetry reading, 5-state diagnostic status, and 5-stage setup progress.
+  - `POST /api/hardware/claim`: Claims an unowned device using `nodeId` and physical `claimCode`. Enforces HTTP 409 Conflict rejection if already claimed.
+  - `POST /api/hardware/unpair`: Clears owner assignment and resets user node binding.
+  - `POST /api/hardware/wifi-provision`: Records provisioning status and SSID without capturing credentials.
+  - `GET /api/hardware/blynk-status`: Provides Blynk configuration state and architectural data-path metadata.
+  - `POST /api/hardware/blynk-webhook`: Direct inbound webhook ingestion with device token authorization.
+  - `GET /api/hardware/diagnostics`: Standalone diagnostic evaluation.
+- **Onboarding Route (`authRoutes.js`):** Added `PUT /api/auth/onboarding` allowing citizens to update hardware preference (`yes`, `no`, `not_sure`).
 
+### 3. Frontend Implementation
+- **Hardware Page (`/hardware` & `/citizen/hardware`):**
+  - Five comprehensive tabs: Overview & Readings, Pipeline Installation Guide, Connect to Wi-Fi, Diagnostics & Troubleshooting, and About the Hardware.
+  - 5-stage setup stepper: Unboxed & Inspected -> Pipe Installed -> Wi-Fi Connected -> Cloud Linked -> Active Ingestion.
+  - Real-time readings cards for pH, Turbidity, TDS, and Water Temperature with BIS IS 10500:2012 compliance tags.
+  - Claim Device Modal with physical voucher secret input and Unpair Device confirmation dialog.
+- **Onboarding Modal (`HardwareOnboardingModal.jsx`):**
+  - High-conversion, aqua-themed modal displayed to unprompted citizens after signup/login.
+  - Three distinct choices: "Yes, I have a device", "No, I don't have a device", and "I am not sure".
+  - Graceful deferral ("Decide later") without permanent modal lockout.
+- **Dashboard & Navigation Integration:**
+  - Added "Hardware" link with IoT chip icon to `Sidebar.jsx`.
+  - Added responsive Hardware Status widget to `CitizenDashboardPage.jsx` above stat cards.
+  - Added Hardware Device Monitoring configuration card in `ProfilePage.jsx` for preference switching.
+  - Maintained full AI image-screening (`/citizen/image-screening`) and trend inspection for users without hardware.
 
+### 4. Firmware Reference Artifacts
+- `firmware/JalDrishti_ESP32_ReadyMade.ino`: Production factory sketch featuring Captive Portal / SoftAP provisioning (`192.168.4.1`), non-volatile NVS credential storage, multi-ADC sensor sampling with temperature compensation, direct TLS HTTP POST ingestion with `x-device-key`, and physical factory reset switch.
+- `firmware/README.md`: Technician guide detailing hardware specifications, factory pinouts, calibration workflows, and mechanical piping specifications.
 
-
-
-
-
-
+### 5. Automated Verification
+- **Automated Test Suite (Suite 19):** 18 new automated tests in `tests/hardware.test.js` covering onboarding state transitions, claim authentication, anti-squatting 409 rejections, Wi-Fi provisioning logging, 5-state connection diagnostics, and Blynk telemetry ingestion.
+- **Full Test Runner (`tests/runner.js`):** 234 passing tests across 19 suites with 0 failures.
+- **Frontend Production Build:** Vite v5.4.21 completed cleanly with zero compilation errors in 10.94s.

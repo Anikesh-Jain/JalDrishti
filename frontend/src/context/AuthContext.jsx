@@ -151,12 +151,59 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
+   * Update hardware onboarding choice
+   */
+  const updateHardwareOnboarding = useCallback(async (status) => {
+    const response = await api.auth.updateOnboarding(status);
+    if (response && response.user) {
+      setUser(response.user);
+      return response;
+    }
+    throw new Error('Failed to update hardware onboarding status');
+  }, []);
+
+  /**
+   * Refresh authenticated user record from server
+   */
+  const refreshUser = useCallback(async () => {
+    const storedToken = getAuthToken();
+    if (!storedToken) return null;
+    try {
+      const response = await api.auth.getMe(storedToken);
+      if (response && response.user) {
+        setUser(response.user);
+        return response.user;
+      }
+    } catch {
+      // Ignore
+    }
+    return null;
+  }, []);
+
+  /**
    * Logout current user and clear stored tokens
    */
   const logout = useCallback(() => {
     setAuthToken(null);
     setToken(null);
     setUser(null);
+  }, []);
+
+  // Integrated Device Onboarding & Setup modal state
+  const [deviceSetupModal, setDeviceSetupModal] = useState({
+    isOpen: false,
+    step: 'initial' // 'initial' | 'resume' | 'install' | 'claim' | 'wifi' | 'verify' | 'not_sure' | 'no_device'
+  });
+
+  const openDeviceSetup = useCallback((step = 'initial') => {
+    setDeviceSetupModal({
+      isOpen: true,
+      step: step || 'initial'
+    });
+  }, []);
+
+  const closeDeviceSetup = useCallback(() => {
+    setDeviceSetupModal((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
   const value = {
@@ -169,7 +216,12 @@ export function AuthProvider({ children }) {
     register,
     googleLogin,
     updateProfile,
-    logout
+    updateHardwareOnboarding,
+    refreshUser,
+    logout,
+    deviceSetupModal,
+    openDeviceSetup,
+    closeDeviceSetup
   };
 
 
