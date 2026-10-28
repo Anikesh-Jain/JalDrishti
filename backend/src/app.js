@@ -17,7 +17,10 @@ app.use(helmet());
 // Hardened CORS configuration (restricts origins to configured CLIENT_URL and local dev origins)
 const parseOrigins = (raw) => {
   if (!raw) return [];
-  return raw.split(',').map((o) => o.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map((o) => o.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
 };
 
 const configuredOrigins = parseOrigins(env.CLIENT_URL);
@@ -38,7 +41,14 @@ const corsOptions = {
     // Allow non-browser requests with no origin (e.g. mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    if (allowedOriginsSet.has(origin)) {
+    const normalizedOrigin = origin.replace(/\/+$/, '');
+    if (allowedOriginsSet.has(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    // Allow Vercel preview and canonical deployments when a vercel.app origin is configured
+    const hasVercelConfigured = Array.from(allowedOriginsSet).some((o) => o.includes('.vercel.app'));
+    if (hasVercelConfigured && normalizedOrigin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
 

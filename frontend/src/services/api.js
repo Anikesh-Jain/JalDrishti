@@ -6,7 +6,19 @@
  * Supports Authorization Bearer token header injection and centralized endpoint methods.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const resolveBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+  if (import.meta.env.PROD) {
+    console.error('[JalDrishti Warning] Neither VITE_API_URL nor VITE_API_BASE_URL is configured in production environment! Falling back to localhost:5000.');
+  }
+  return 'http://localhost:5000/api';
+};
+
+const BASE_URL = resolveBaseUrl();
 const TOKEN_KEY = 'jaldrishti_auth_token';
 
 let activeToken = null;

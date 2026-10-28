@@ -32,7 +32,8 @@ async function provisionAdmin() {
   console.log('================================================================');
   console.log('JALDRISHTI SECURE ADMINISTRATOR PROVISIONING');
   console.log('================================================================');
-  console.log(`Connecting to: ${MONGODB_URI}`);
+  const sanitizedUri = MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
+  console.log(`Connecting to: ${sanitizedUri}`);
 
   await mongoose.connect(MONGODB_URI);
 

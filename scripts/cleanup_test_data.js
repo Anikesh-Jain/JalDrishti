@@ -4,7 +4,8 @@ const mongoose = require(path.resolve(__dirname, '../backend/node_modules/mongoo
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaldrishti';
 
 async function cleanup() {
-  console.log(`Connecting to ${MONGODB_URI}...`);
+  const sanitizedUri = MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
+  console.log(`Connecting to ${sanitizedUri}...`);
   await mongoose.connect(MONGODB_URI);
   const db = mongoose.connection.db;
 

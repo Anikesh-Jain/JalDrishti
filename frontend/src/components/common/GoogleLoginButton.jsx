@@ -69,7 +69,8 @@ export default function GoogleLoginButton({ onSuccess, onError, disabled = false
           const detail = error?.type || error?.message || 'Google Sign-In failed or popup was closed';
           console.warn('[Google Identity Services Warning]:', detail);
           if (detail.includes('origin_mismatch') || detail.includes('unregistered_origin')) {
-            onErrorRef.current?.(new Error('Google OAuth Error: Origin not authorized in Google Cloud Console. Add http://localhost:5173 to Authorized JavaScript origins.'));
+            const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+            onErrorRef.current?.(new Error(`Google OAuth Error: Origin not authorized in Google Cloud Console. Add ${currentOrigin} to Authorized JavaScript origins.`));
           } else {
             onErrorRef.current?.(new Error(detail));
           }

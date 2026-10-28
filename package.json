@@ -8,6 +8,7 @@
     "start:backend": "npm start --prefix backend",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
     "build:frontend": "npm run build --prefix frontend",
     "seed": "node scripts/seed_database.js",
     "db:local": "node scripts/run_local_db.js"

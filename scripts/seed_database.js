@@ -123,7 +123,8 @@ const INITIAL_ADMIN_USER = INITIAL_USERS[0];
 async function seedDatabase(customUri, options = {}) {
   const uri = customUri || MONGODB_URI;
   const includeDemo = options.includeDemo || process.argv.includes('--demo');
-  console.log(`[JalDrishti Seeder] Connecting to database at: ${uri}`);
+  const sanitizedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
+  console.log(`[JalDrishti Seeder] Connecting to database at: ${sanitizedUri}`);
   console.log(`[JalDrishti Seeder] Mode: ${includeDemo ? 'DEMO SEED (includes simulated nodes, users, readings)' : 'PRODUCTION / CLEAN BASELINE (thresholds, hardware node, admin only)'}`);
 
   if (mongoose.connection.readyState === 0) {
