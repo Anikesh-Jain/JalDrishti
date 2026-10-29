@@ -1,5 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ReferenceLine
+} from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import {
   DropletIcon,
@@ -21,22 +31,35 @@ import {
   Stage3BackendVisual,
   Stage4WebAppVisual
 } from '../components/home/ArchitectureVisuals';
+import DemoBadge from '../components/common/DemoBadge';
+import {
+  DEMO_STATIONS,
+  DEMO_LATEST_READING,
+  DEMO_ALERTS,
+  getDemoHistoricalReadings
+} from '../utils/demoData';
 
 /**
  * JalDrishti Public Landing Page
  *
- * Section Sequence (Strict Requirement):
+ * Section Sequence:
  * 1. Landing / Hero (#hero)
  * 2. Overview (#overview, #mission)
  * 3. Indicators (#indicators)
- * 4. Architecture (#how-it-works)
- * 5. FAQ (#faq, #help)
- * 6. Contact (#contact)
- * 7. Governance / Terms (#privacy, #terms) & CTA -> Footer (via AppLayout)
+ * 4. Interactive Live Demonstration (#live-demo)
+ * 5. Architecture (#how-it-works)
+ * 6. FAQ (#faq, #help)
+ * 7. Contact (#contact)
+ * 8. Governance / Terms (#privacy, #terms) & CTA -> Footer (via AppLayout)
  */
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
-  const [latestReading, setLatestReading] = useState(null);
+  const [latestReading, setLatestReading] = useState(DEMO_LATEST_READING);
+  const [isDemo, setIsDemo] = useState(true);
+  const [selectedStationId, setSelectedStationId] = useState('NODE-01-INDORE-WARD12');
+  const [selectedParam, setSelectedParam] = useState('turbidity');
+  const [selectedRange, setSelectedRange] = useState('24h');
+
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [contactReferenceId, setContactReferenceId] = useState('');
@@ -47,23 +70,29 @@ export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     let mounted = true;
     async function loadLatest() {
       try {
         const res = await api.nodes.getLatestReading();
-        if (mounted && res && res.data) {
+        if (mounted && res && res.data && typeof res.data.pH === 'number') {
           setLatestReading(res.data);
+          setIsDemo(false);
+        } else if (mounted) {
+          setLatestReading(DEMO_LATEST_READING);
+          setIsDemo(true);
         }
       } catch {
-        // Fallback to sample data for display
+        if (mounted) {
+          setLatestReading(DEMO_LATEST_READING);
+          setIsDemo(true);
+        }
       }
     }
     loadLatest();
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated]);
+  }, []);
 
   const dashboardPath = user?.role === 'Admin' ? '/admin' : '/citizen';
 
@@ -134,6 +163,74 @@ export default function HomePage() {
       a: 'The complementary AI screening tool uses Google Gemini Vision to conduct preliminary visual inspection of surface water photographs, identifying visible cues such as severe discoloration, heavy colloidal cloudiness, surface oil sheens, or algal blooms. However, AI image screening CANNOT detect dissolved chemical contaminants, microscopic bacteria, heavy metals (such as arsenic or lead), or odorless toxins. It serves exclusively as an auxiliary visual screening aid and never replaces physical probe telemetry or certified laboratory testing.'
     }
   ];
+
+  const currentStation = DEMO_STATIONS.find((s) => s.nodeId === selectedStationId) || DEMO_STATIONS[0];
+  const stationReading = currentStation.latestReading || DEMO_LATEST_READING;
+
+  const historicalData = useMemo(() => {
+    return getDemoHistoricalReadings({
+      nodeId: selectedStationId,
+      timeRange: selectedRange,
+      limit: selectedRange === '24h' ? 24 : selectedRange === '7d' ? 28 : 30
+    });
+  }, [selectedStationId, selectedRange]);
+
+  const activeDemoAlert = DEMO_ALERTS.find((a) => a.nodeId === selectedStationId && !a.acknowledged);
+
+  const parameterConfigs = {
+    turbidity: {
+      name: 'Turbidity',
+      unit: 'NTU',
+      threshold: 5.0,
+      thresholdLabel: 'BIS Limit: 5.0 NTU',
+      color: '#0284C7',
+      safeBand: '≤ 5.0 NTU',
+      description: 'Suspended silt and particulate cloudiness affecting disinfection integrity.'
+    },
+    pH: {
+      name: 'Acidity (pH)',
+      unit: '',
+      threshold: 8.5,
+      thresholdLabel: 'BIS Upper: 8.5',
+      color: '#10B981',
+      safeBand: '6.5 — 8.5 pH',
+      description: 'Hydrogen-ion balance governing pipe corrosion and chlorine efficacy.'
+    },
+    tds: {
+      name: 'Total Dissolved Solids',
+      unit: 'ppm',
+      threshold: 500,
+      thresholdLabel: 'BIS Desirable: 500 ppm',
+      color: '#8B5CF6',
+      safeBand: '≤ 500 ppm',
+      description: 'Inorganic mineral salts, calcium, magnesium, and dissolved ions.'
+    },
+    temperature: {
+      name: 'Temperature',
+      unit: '°C',
+      threshold: 30,
+      thresholdLabel: 'Ambient Standard: 30°C',
+      color: '#F59E0B',
+      safeBand: '10 — 40 °C',
+      description: 'Controls dissolved gas solubility and biological kinetics in water.'
+    },
+    dissolvedOxygen: {
+      name: 'Dissolved Oxygen',
+      unit: 'mg/L',
+      threshold: 6.0,
+      thresholdLabel: 'Healthy Min: 6.0 mg/L',
+      color: '#06B6D4',
+      safeBand: '≥ 6.0 mg/L',
+      description: 'Aeration level critical for aquatic health and freshwater freshness.'
+    }
+  };
+
+  const currentParamConfig = parameterConfigs[selectedParam] || parameterConfigs.turbidity;
+
+  const paramValues = historicalData.map((d) => d[selectedParam]).filter((v) => typeof v === 'number');
+  const paramMin = paramValues.length ? Math.min(...paramValues).toFixed(2) : '—';
+  const paramMax = paramValues.length ? Math.max(...paramValues).toFixed(2) : '—';
+  const paramAvg = paramValues.length ? (paramValues.reduce((a, b) => a + b, 0) / paramValues.length).toFixed(2) : '—';
 
   return (
     <div className="bg-[#F0FAFF] text-[#334155] font-sans selection:bg-[#38BDF8] selection:text-white">
@@ -209,20 +306,23 @@ export default function HomePage() {
                 <div className="relative rounded-2xl p-6 bg-white/95 backdrop-blur-md border border-[#BAE6FD] shadow-2xl text-[#334155] space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-[#BAE6FD]">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${latestReading ? 'bg-emerald-500 animate-pulse' : 'bg-cyan-500'}`} />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-xs uppercase tracking-wider font-bold text-[#475569]">
-                        Station Telemetry Status
+                        Telemetry Monitor
                       </span>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                      latestReading?.overallStatus === 'Unsafe'
-                        ? 'bg-rose-50 border-rose-200 text-rose-700'
-                        : latestReading?.overallStatus === 'Safe'
-                        ? 'bg-[#DDF8E8] border-[#A7F3D0] text-[#15803D]'
-                        : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`}>
-                      {latestReading?.overallStatus || 'Awaiting Data'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isDemo && <DemoBadge size="xs" label="Simulated" />}
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                        latestReading?.overallStatus === 'Unsafe'
+                          ? 'bg-rose-50 border-rose-200 text-rose-700'
+                          : latestReading?.overallStatus === 'Warning'
+                          ? 'bg-amber-50 border-amber-200 text-amber-700'
+                          : 'bg-[#DDF8E8] border-[#A7F3D0] text-[#15803D]'
+                      }`}>
+                        {latestReading?.overallStatus || 'Safe'}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Highlight Parameters */}
@@ -230,7 +330,7 @@ export default function HomePage() {
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Acidity (pH)</span>
                       <span className="text-2xl font-black text-[#0284C7] mt-1 block font-mono">
-                        {typeof latestReading?.pH === 'number' ? latestReading.pH.toFixed(1) : '—'}
+                        {typeof latestReading?.pH === 'number' ? latestReading.pH.toFixed(2) : '7.35'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">BIS 6.5 — 8.5 Limit</span>
                     </div>
@@ -238,20 +338,44 @@ export default function HomePage() {
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Dissolved Solids</span>
                       <span className="text-2xl font-black text-[#15803D] mt-1 block font-mono">
-                        {typeof latestReading?.tds === 'number' ? `${latestReading.tds} ppm` : '—'}
+                        {typeof latestReading?.tds === 'number' ? `${latestReading.tds} ppm` : '245 ppm'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">&lt; 500 ppm Permissible</span>
                     </div>
                   </div>
 
+                  {/* Secondary 3 Parameters */}
+                  <div className="grid grid-cols-3 gap-2 py-0.5 text-center">
+                    <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
+                      <span className="text-[10px] text-[#64748B] block font-medium">Turbidity</span>
+                      <span className="text-xs font-black text-[#0284C7] mt-0.5 block font-mono">
+                        {typeof latestReading?.turbidity === 'number' ? `${latestReading.turbidity.toFixed(2)} NTU` : '1.42 NTU'}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
+                      <span className="text-[10px] text-[#64748B] block font-medium">Temp</span>
+                      <span className="text-xs font-black text-rose-600 mt-0.5 block font-mono">
+                        {typeof latestReading?.temperature === 'number' ? `${latestReading.temperature.toFixed(1)} °C` : '23.8 °C'}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
+                      <span className="text-[10px] text-[#64748B] block font-medium">Dissolved O₂</span>
+                      <span className="text-xs font-black text-teal-600 mt-0.5 block font-mono">
+                        {typeof latestReading?.dissolvedOxygen === 'number' ? `${latestReading.dissolvedOxygen.toFixed(1)} mg/L` : '7.2 mg/L'}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="pt-2 flex items-center justify-between text-xs text-[#475569] border-t border-[#BAE6FD]">
-                    <span className="truncate">Node: {latestReading?.nodeName || latestReading?.nodeId || 'Ward 12 Municipal Station'}</span>
+                    <span className="truncate font-medium">
+                      Node: {latestReading?.nodeName || latestReading?.nodeId || 'Bilawali Lake Intake'}
+                    </span>
                     <span className="shrink-0 text-[#0284C7] font-mono text-[11px] font-semibold">
-                      {latestReading ? '● Live Telemetry' : '● Station Online'}
+                      {isDemo ? '● Simulated Stream' : '● Live IoT Stream'}
                     </span>
                   </div>
                   <p className="text-[10px] text-[#64748B] text-center italic">
-                    {latestReading ? 'Real-time telemetry stream from municipal monitoring node' : 'Autonomous IoT monitoring station active. Awaiting sensor telemetry.'}
+                    {isDemo ? 'Calibrated simulated telemetry demonstrating real-time ingestion' : 'Real-time telemetry stream from municipal monitoring node'}
                   </p>
                 </div>
               </div>
@@ -572,7 +696,451 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          4. HOW IT WORKS / SYSTEM ARCHITECTURE (DIRECTLY AFTER INDICATORS)
+          INTERACTIVE LIVE DEMONSTRATION & TELEMETRY PREVIEW
+          ========================================================================= */}
+      <section id="live-demo" className="py-20 lg:py-24 bg-gradient-to-b from-white via-[#F0FAFF] to-white border-b border-[#BAE6FD] scroll-mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping" />
+              <span>Interactive Telemetry Demonstration</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+              Live Monitoring &amp; Early Warning System
+            </h2>
+            <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+              Explore how JalDrishti continuously processes multi-parameter telemetry from municipal monitoring nodes across Indore, verifying readings against Bureau of Indian Standards (BIS IS 10500:2012) thresholds.
+            </p>
+            <div className="flex justify-center pt-1">
+              <DemoBadge
+                variant="banner"
+                message="Simulated Demonstration Telemetry: The readings, historical charts, and alert states displayed below simulate live IoT sensors streaming from 4 Indore water intake and distribution points."
+              />
+            </div>
+          </div>
+
+          {/* Station Selector Bar */}
+          <div className="bg-white rounded-2xl border border-[#BAE6FD] p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-[#BAE6FD]/60">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#1E293B]">
+                <MapPinIcon className="w-4 h-4 text-[#0284C7]" />
+                <span>Select Monitoring Station (Indore Municipal Water Distribution):</span>
+              </div>
+              <DemoBadge size="xs" label="4 Nodes Active" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {DEMO_STATIONS.map((st) => {
+                const isSelected = selectedStationId === st.nodeId;
+                const isAlertNode = st.nodeId === 'NODE-03-KHAN-RIVER-DIV' || st.overallStatus === 'Caution';
+                return (
+                  <button
+                    key={st.nodeId}
+                    type="button"
+                    onClick={() => setSelectedStationId(st.nodeId)}
+                    className={`p-3.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                      isSelected
+                        ? 'bg-[#E0F7FF] border-[#0284C7] shadow-sm ring-1 ring-[#0284C7]'
+                        : 'bg-[#F0FAFF]/60 hover:bg-[#F0FAFF] border-[#BAE6FD]/80 text-[#475569]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[11px] font-bold text-[#0284C7] bg-white px-2 py-0.5 rounded border border-[#BAE6FD]">
+                        {st.nodeId}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isAlertNode
+                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                          : 'bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]'
+                      }`}>
+                        {isAlertNode ? '⚠ Warning' : '● Safe'}
+                      </span>
+                    </div>
+                    <div className="mt-2.5">
+                      <p className="text-xs font-bold text-[#1E293B] truncate">{st.name}</p>
+                      <p className="text-[11px] text-[#64748B] truncate mt-0.5">{st.location.address}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Station Banner & Real-time Parameters Grid */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#1E293B]">{currentStation.name}</h3>
+                  <DemoBadge size="xs" label="Simulated Live Node" />
+                </div>
+                <p className="text-xs text-[#64748B]">
+                  Coordinates: {currentStation.location.latitude.toFixed(4)}° N, {currentStation.location.longitude.toFixed(4)}° E • Hardware: ESP32-S3 IoT Gateway • Heartbeat: 30s Interval
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/citizen/map"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#0284C7] bg-[#E0F7FF] hover:bg-[#BAE6FD] transition-colors"
+                >
+                  Locate on GIS Map →
+                </Link>
+                <Link
+                  to="/citizen/trends"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-[#0284C7] hover:bg-[#0369A1] transition-colors"
+                >
+                  Full Analytics →
+                </Link>
+              </div>
+            </div>
+
+            {/* 5 Real-Time Telemetry Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+              {/* pH */}
+              <div className="p-4 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0284C7] uppercase tracking-wide">Acidity (pH)</span>
+                  <DemoBadge size="xs" label="Sim" />
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                    {stationReading.pH?.toFixed(2) || '7.35'}
+                  </span>
+                  <span className="text-xs font-semibold text-[#64748B]">pH</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[10px]">
+                  <span className="text-[#64748B]">BIS 6.5 — 8.5</span>
+                  <span className="px-1.5 py-0.5 rounded font-bold bg-[#DDF8E8] text-[#15803D]">
+                    Safe Band
+                  </span>
+                </div>
+              </div>
+
+              {/* Turbidity */}
+              <div className={`p-4 rounded-2xl bg-white border shadow-xs transition-all ${
+                stationReading.turbidity > 5.0 ? 'border-amber-400 bg-amber-50/40' : 'border-[#BAE6FD] hover:border-[#38BDF8]'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0284C7] uppercase tracking-wide">Turbidity</span>
+                  <DemoBadge size="xs" label="Sim" />
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className={`text-2xl font-black font-mono ${stationReading.turbidity > 5.0 ? 'text-amber-700' : 'text-[#1E293B]'}`}>
+                    {stationReading.turbidity?.toFixed(2) || '1.42'}
+                  </span>
+                  <span className="text-xs font-semibold text-[#64748B]">NTU</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[10px]">
+                  <span className="text-[#64748B]">Limit ≤ 5.0 NTU</span>
+                  <span className={`px-1.5 py-0.5 rounded font-bold ${
+                    stationReading.turbidity > 5.0
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-[#DDF8E8] text-[#15803D]'
+                  }`}>
+                    {stationReading.turbidity > 5.0 ? 'Above Limit' : 'Safe Band'}
+                  </span>
+                </div>
+              </div>
+
+              {/* TDS */}
+              <div className="p-4 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0284C7] uppercase tracking-wide">Dissolved Solids</span>
+                  <DemoBadge size="xs" label="Sim" />
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                    {stationReading.tds || 245}
+                  </span>
+                  <span className="text-xs font-semibold text-[#64748B]">ppm</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[10px]">
+                  <span className="text-[#64748B]">Limit &lt; 500 ppm</span>
+                  <span className="px-1.5 py-0.5 rounded font-bold bg-[#DDF8E8] text-[#15803D]">
+                    Desirable
+                  </span>
+                </div>
+              </div>
+
+              {/* Dissolved Oxygen */}
+              <div className="p-4 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0284C7] uppercase tracking-wide">Dissolved O₂</span>
+                  <DemoBadge size="xs" label="Sim" />
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                    {stationReading.dissolvedOxygen?.toFixed(1) || '7.2'}
+                  </span>
+                  <span className="text-xs font-semibold text-[#64748B]">mg/L</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[10px]">
+                  <span className="text-[#64748B]">Min ≥ 6.0 mg/L</span>
+                  <span className="px-1.5 py-0.5 rounded font-bold bg-[#DDF8E8] text-[#15803D]">
+                    Healthy
+                  </span>
+                </div>
+              </div>
+
+              {/* Water Temperature */}
+              <div className="p-4 rounded-2xl bg-white border border-[#BAE6FD] shadow-xs hover:border-[#38BDF8] transition-all col-span-2 sm:col-span-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0284C7] uppercase tracking-wide">Temperature</span>
+                  <DemoBadge size="xs" label="Sim" />
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                    {stationReading.temperature?.toFixed(1) || '23.8'}
+                  </span>
+                  <span className="text-xs font-semibold text-[#64748B]">°C</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[10px]">
+                  <span className="text-[#64748B]">Range 10 — 40°C</span>
+                  <span className="px-1.5 py-0.5 rounded font-bold bg-[#E0F7FF] text-[#0284C7]">
+                    Ambient
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Trend Chart and Alert Banner Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left 8 Cols: Interactive Historical Trend Chart */}
+            <div className="lg:col-span-8 bg-white rounded-3xl border border-[#BAE6FD] p-6 shadow-md space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#BAE6FD]/60">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-base font-bold text-[#1E293B]">Historical Telemetry Trends</h4>
+                    <DemoBadge size="xs" label="Simulated Curves" />
+                  </div>
+                  <p className="text-xs text-[#64748B] mt-0.5">
+                    Continuous readings with diurnal cycles and reference threshold lines
+                  </p>
+                </div>
+
+                {/* Time Range Selector */}
+                <div className="flex items-center gap-1.5 bg-[#F0FAFF] p-1 rounded-xl border border-[#BAE6FD]">
+                  {['24h', '7d', '30d'].map((rng) => (
+                    <button
+                      key={rng}
+                      type="button"
+                      onClick={() => setSelectedRange(rng)}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        selectedRange === rng
+                          ? 'bg-[#0284C7] text-white shadow-xs'
+                          : 'text-[#475569] hover:text-[#0284C7]'
+                      }`}
+                    >
+                      {rng === '24h' ? '24 Hours' : rng === '7d' ? '7 Days' : '30 Days'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Parameter Tab Switcher */}
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(parameterConfigs).map(([key, cfg]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedParam(key)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                      selectedParam === key
+                        ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                        : 'bg-white text-[#475569] border-[#BAE6FD] hover:bg-[#F0FAFF]'
+                    }`}
+                  >
+                    {cfg.name} {cfg.unit && `(${cfg.unit})`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Statistical Summary Bar */}
+              <div className="grid grid-cols-4 gap-2 py-2 px-3 bg-[#F0FAFF] rounded-xl border border-[#BAE6FD]/70 text-center text-xs">
+                <div>
+                  <span className="text-[10px] text-[#64748B] block">Minimum</span>
+                  <span className="font-mono font-bold text-[#1E293B]">{paramMin} {currentParamConfig.unit}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#64748B] block">Average (Mean)</span>
+                  <span className="font-mono font-bold text-[#0284C7]">{paramAvg} {currentParamConfig.unit}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#64748B] block">Maximum</span>
+                  <span className="font-mono font-bold text-[#1E293B]">{paramMax} {currentParamConfig.unit}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#64748B] block">BIS Limit</span>
+                  <span className="font-mono font-bold text-[#15803D]">{currentParamConfig.safeBand}</span>
+                </div>
+              </div>
+
+              {/* Recharts Area Chart */}
+              <div className="h-64 sm:h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={historicalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="paramColor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={currentParamConfig.color} stopOpacity={0.35} />
+                        <stop offset="95%" stopColor={currentParamConfig.color} stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#BAE6FD" opacity={0.5} />
+                    <XAxis
+                      dataKey={selectedRange === '24h' ? 'time' : 'date'}
+                      tick={{ fill: '#64748B', fontSize: 10 }}
+                      stroke="#94A3B8"
+                    />
+                    <YAxis
+                      tick={{ fill: '#64748B', fontSize: 10 }}
+                      stroke="#94A3B8"
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const val = payload[0].value;
+                          return (
+                            <div className="bg-[#0F172A] text-white p-2.5 rounded-xl shadow-xl border border-slate-700 text-xs space-y-1">
+                              <p className="font-semibold text-slate-300">{label}</p>
+                              <p className="font-mono font-bold text-sky-400">
+                                {currentParamConfig.name}: {typeof val === 'number' ? val.toFixed(2) : val} {currentParamConfig.unit}
+                              </p>
+                              <p className="text-[10px] text-emerald-400 font-medium">
+                                Standard: {currentParamConfig.safeBand}
+                              </p>
+                              <p className="text-[9px] text-amber-300 italic pt-0.5">
+                                [Simulated Demonstration Data]
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <ReferenceLine
+                      y={currentParamConfig.threshold}
+                      stroke="#EF4444"
+                      strokeDasharray="4 4"
+                      label={{ value: currentParamConfig.thresholdLabel, fill: '#EF4444', fontSize: 9, position: 'top' }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey={selectedParam}
+                      stroke={currentParamConfig.color}
+                      strokeWidth={2.5}
+                      fillOpacity={1}
+                      fill="url(#paramColor)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="text-[11px] text-[#64748B] flex items-center justify-between pt-2 border-t border-[#BAE6FD]/60">
+                <span>{currentParamConfig.description}</span>
+                <span className="italic text-[#0284C7] font-medium">Continuous 30s sampling rate</span>
+              </div>
+            </div>
+
+            {/* Right 4 Cols: Early Warning Simulation & Hardware Specs */}
+            <div className="lg:col-span-4 space-y-5">
+              {/* Early Warning Engine Demonstration Card */}
+              <div className="bg-white rounded-3xl border border-[#BAE6FD] p-6 shadow-md space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#BAE6FD]/60">
+                  <div className="flex items-center gap-2">
+                    <BellIcon className="w-4 h-4 text-amber-600" />
+                    <h4 className="text-sm font-bold text-[#1E293B]">Automated Early Warning Engine</h4>
+                  </div>
+                  <DemoBadge size="xs" label="Simulated" />
+                </div>
+
+                {activeDemoAlert ? (
+                  <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                      <span className="text-xs font-bold uppercase tracking-wide">
+                        {activeDemoAlert.severity} Severity Alert Triggered
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed font-medium">
+                      {activeDemoAlert.message}
+                    </p>
+                    <div className="pt-2 border-t border-amber-200/80 flex items-center justify-between text-[10px]">
+                      <span>Node: {activeDemoAlert.nodeId}</span>
+                      <span className="font-semibold text-amber-800">SMS &amp; Web Push Dispatched</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-[#DDF8E8] border border-[#A7F3D0] text-[#15803D] space-y-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircleIcon className="w-4 h-4 text-[#15803D]" />
+                      <span className="text-xs font-bold uppercase tracking-wide">
+                        Telemetry Nominal
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed">
+                      All physical parameters for <strong>{currentStation.name}</strong> are operating within BIS IS 10500:2012 acceptable drinking water standards.
+                    </p>
+                    <div className="pt-2 border-t border-[#A7F3D0]/60 flex items-center justify-between text-[10px]">
+                      <span>Continuous Heartbeat: Online</span>
+                      <span className="font-semibold">Debounce Engine: Active</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-3.5 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70 text-xs text-[#475569] space-y-1.5">
+                  <span className="font-bold text-[#1E293B] block">How Threshold Alerts Work:</span>
+                  <p className="text-[11px] leading-relaxed">
+                    Readings received via IoT webhooks undergo instant delta checks against Indian Standard limits. Sustained deviations automatically elevate station status and alert municipal officials.
+                  </p>
+                </div>
+              </div>
+
+              {/* Ready-Made Hardware Specifications Card */}
+              <div className="bg-white rounded-3xl border border-[#BAE6FD] p-6 shadow-md space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#BAE6FD]/60">
+                  <div className="flex items-center gap-2">
+                    <SmartphoneIcon className="w-4 h-4 text-[#0284C7]" />
+                    <h4 className="text-sm font-bold text-[#1E293B]">Sensor Station Architecture</h4>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#0284C7] bg-[#E0F7FF] px-2 py-0.5 rounded border border-[#BAE6FD]">
+                    Ready-Made
+                  </span>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#BAE6FD]/40">
+                    <span className="text-[#64748B]">SoC Microcontroller:</span>
+                    <span className="font-semibold text-[#1E293B]">ESP32-S3 Dual-Core</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#BAE6FD]/40">
+                    <span className="text-[#64748B]">Integrated Probes:</span>
+                    <span className="font-semibold text-[#1E293B]">pH, Turbidity, TDS, Temp</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#BAE6FD]/40">
+                    <span className="text-[#64748B]">Ingestion Pipeline:</span>
+                    <span className="font-semibold text-[#1E293B]">2.4 GHz Wi-Fi / REST Webhook</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5">
+                    <span className="text-[#64748B]">Sampling Frequency:</span>
+                    <span className="font-semibold text-[#15803D]">Every 30 Seconds</span>
+                  </div>
+                </div>
+
+                <Link
+                  to="/devices"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#F0FAFF] hover:bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors block text-center"
+                >
+                  <span>View All Sensor Devices &amp; Topology →</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          5. HOW IT WORKS / SYSTEM ARCHITECTURE
           ========================================================================= */}
       <section id="how-it-works" className="py-16 lg:py-20 bg-[#F0FAFF] border-b border-[#BAE6FD] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

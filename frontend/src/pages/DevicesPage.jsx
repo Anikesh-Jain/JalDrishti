@@ -5,6 +5,8 @@ import CitizenLayout from '../layouts/CitizenLayout';
 import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
+import DemoBadge from '../components/common/DemoBadge';
+import { DEMO_STATIONS } from '../utils/demoData';
 import api from '../services/api';
 
 /**
@@ -19,7 +21,8 @@ export default function DevicesPage() {
   const isAdmin = user?.role === 'Admin';
   const Layout = isAdmin ? AdminLayout : CitizenLayout;
 
-  const [stations, setStations] = useState([]);
+  const [stations, setStations] = useState(DEMO_STATIONS);
+  const [isDemo, setIsDemo] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionSuccess, setActionSuccess] = useState('');
@@ -57,11 +60,16 @@ export default function DevicesPage() {
     setError(null);
     try {
       const res = await api.sensor.getNodes();
-      if (res && res.data) {
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
         setStations(res.data);
+        setIsDemo(false);
+      } else {
+        setStations(DEMO_STATIONS);
+        setIsDemo(true);
       }
     } catch (err) {
-      setError(err.message || 'Failed to load sensor nodes from server.');
+      setStations(DEMO_STATIONS);
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
@@ -199,6 +207,7 @@ export default function DevicesPage() {
         badge={<Badge variant="info" size="sm">Multi-Node Telemetry</Badge>}
         actions={
           <div className="flex items-center gap-2.5">
+            {isDemo && <DemoBadge size="sm" label="Simulated Fleet" />}
             <Button
               variant="outline"
               size="sm"
@@ -221,6 +230,16 @@ export default function DevicesPage() {
           </div>
         }
       />
+
+      {/* Demo Data Fallback Notice */}
+      {isDemo && (
+        <div className="my-4">
+          <DemoBadge
+            variant="banner"
+            message="Simulated Station Fleet: Displaying 4 calibrated Indore monitoring nodes. Registered live ESP32-S3 devices will automatically replace simulated stations."
+          />
+        </div>
+      )}
 
       {/* Action Success Banner */}
       {actionSuccess && (
@@ -332,6 +351,7 @@ export default function DevicesPage() {
                 </div>
 
                 <div className="flex items-center gap-3 self-start sm:self-auto">
+                  {isDemo && <DemoBadge size="xs" label="Simulated Node" />}
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full ${
                       st.status === 'Online'

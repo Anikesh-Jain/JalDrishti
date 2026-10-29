@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
+import { DEMO_ALERTS } from '../utils/demoData';
 
 const AlertContext = createContext(null);
 
@@ -33,9 +34,10 @@ function saveStoredReadIds(user, idSet) {
 
 export function AlertProvider({ children }) {
   const { user } = useAuth();
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState(DEMO_ALERTS);
   const [loading, setLoading] = useState(false);
   const [readAlertIds, setReadAlertIds] = useState(() => loadStoredReadIds(user));
+  const [isDemo, setIsDemo] = useState(true);
 
   // Reload read IDs when user switches or logs in/out
   useEffect(() => {
@@ -44,24 +46,23 @@ export function AlertProvider({ children }) {
 
   // Fetch alerts from backend
   const refreshAlerts = useCallback(async () => {
-    if (!user) {
-      setAlerts([]);
-      return;
-    }
     setLoading(true);
     try {
       const res = await api.alerts.getAll({ limit: 100 });
-      if (res?.data && Array.isArray(res.data)) {
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
         setAlerts(res.data);
+        setIsDemo(false);
       } else {
-        setAlerts([]);
+        setAlerts(DEMO_ALERTS);
+        setIsDemo(true);
       }
     } catch {
-      setAlerts([]);
+      setAlerts(DEMO_ALERTS);
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     refreshAlerts();
@@ -94,7 +95,18 @@ export function AlertProvider({ children }) {
   // Acknowledge an alert (Admin action)
   const acknowledgeAlert = useCallback(async (alertId) => {
     if (!alertId) return;
-    await api.alerts.acknowledge(alertId);
+    try {
+      await api.alerts.acknowledge(alertId);
+    } catch {
+      // Allow seamless local acknowledgment for demo simulated alerts
+      setAlerts((prev) =>
+        prev.map((a) =>
+          (a._id === alertId || a.id === alertId)
+            ? { ...a, status: 'Acknowledged', resolvedAt: new Date().toISOString() }
+            : a
+        )
+      );
+    }
     markAlertAsRead(alertId);
     await refreshAlerts();
   }, [markAlertAsRead, refreshAlerts]);
@@ -125,6 +137,7 @@ export function AlertProvider({ children }) {
     unreadCount,
     readAlertIds,
     loading,
+    isDemo,
     refreshAlerts,
     markAlertAsRead,
     markAllAlertsAsRead,
@@ -136,6 +149,7 @@ export function AlertProvider({ children }) {
     unreadCount,
     readAlertIds,
     loading,
+    isDemo,
     refreshAlerts,
     markAlertAsRead,
     markAllAlertsAsRead,

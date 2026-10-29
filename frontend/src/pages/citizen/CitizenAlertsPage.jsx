@@ -4,6 +4,7 @@ import { useAlertContext } from '../../context/AlertContext';
 import CitizenLayout from '../../layouts/CitizenLayout';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import DemoBadge from '../../components/common/DemoBadge';
 import LoadingState from '../../components/feedback/LoadingState';
 import api from '../../services/api';
 import { AlertTriangleIcon, CheckCircleIcon } from '../../components/common/Icons';
@@ -24,14 +25,15 @@ export default function CitizenAlertsPage() {
     loading,
     readAlertIds,
     markAllAlertsAsRead,
-    acknowledgeAlert
+    acknowledgeAlert,
+    isDemo
   } = useAlertContext();
   const isAdmin = user?.role === 'Admin';
 
   const [activeTab, setActiveTab] = useState('All');
   const [ackingId, setAckingId] = useState(null);
 
-  // Format real alerts from database
+  // Format real alerts from database or demo fallback
   const allFormattedAlerts = (alerts || []).map((a) => {
     let severity = a.severity || (a.status === 'Active' ? (a.value > (a.thresholdLimit * 1.3) ? 'Critical' : 'Warning') : 'Info');
     if (a.parameter === 'turbidity' && a.value > 6.0) severity = 'Critical';
@@ -46,7 +48,8 @@ export default function CitizenAlertsPage() {
       time: a.time || formatRelativeTime(a.timestamp),
       severity,
       status: a.status || 'Active',
-      isRead: (a._id && readAlertIds.has(a._id)) || (a.id && readAlertIds.has(a.id)) || a.status === 'Acknowledged'
+      isRead: (a._id && readAlertIds.has(a._id)) || (a.id && readAlertIds.has(a.id)) || a.status === 'Acknowledged',
+      isDemo: a.isDemo || isDemo
     };
   });
 
@@ -96,10 +99,17 @@ export default function CitizenAlertsPage() {
   return (
     <CitizenLayout>
       <div className="space-y-6">
+        {isDemo && (
+          <DemoBadge variant="banner" />
+        )}
+
         {/* Header matching reference UI */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Alerts</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Alerts</h1>
+              {isDemo && <DemoBadge text="Simulated Feed" />}
+            </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Real-time alerts and notifications
             </p>

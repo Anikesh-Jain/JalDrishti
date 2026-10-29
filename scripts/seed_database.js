@@ -23,45 +23,56 @@ const PROVISIONAL_DEFAULT_THRESHOLDS = [
 ];
 
 /**
- * Prototype SensorNode metadata for single-node academic prototype
- * Location: Bhagirathpura, Ward 12, Indore
+ * Prototype SensorNode metadata matching the 4 Indore monitoring stations
  */
 const PROTOTYPE_SENSOR_NODES = [
   {
     nodeId: 'NODE-01-INDORE-WARD12',
-    name: 'Bhagirathpura Supply Point 1',
+    name: 'Station 1 — Bilawali Lake Intake (Indore)',
     location: {
-      latitude: 22.7196,
-      longitude: 75.8577,
-      address: 'Ward 12, Indore, MP'
+      latitude: 22.6841,
+      longitude: 75.8672,
+      address: 'Bilawali Lake Water Supply Line, Ward 12, Indore, MP'
     },
     deviceKeyHash: 'dev_device_key_hash_ward12',
     status: 'Online',
     lastSeen: new Date()
   },
   {
-    nodeId: 'NODE-02-INDORE-SARWATE',
-    name: 'Sarwate Water Station',
+    nodeId: 'NODE-02-PIPLIYAPALA',
+    name: 'Station 2 — Pipliyapala Regional Lake',
     location: {
-      latitude: 22.7123,
-      longitude: 75.8645,
-      address: 'Sarwate Bus Stand Area, Indore, MP'
+      latitude: 22.6896,
+      longitude: 75.8458,
+      address: 'Pipliyapala Regional Lake Intake, Indore, MP'
     },
-    deviceKeyHash: 'dev_device_key_hash_sarwate',
+    deviceKeyHash: 'dev_device_key_hash_pipliyapala',
     status: 'Online',
     lastSeen: new Date(Date.now() - 5 * 60000)
   },
   {
-    nodeId: 'NODE-03-INDORE-KHAN-RIVER',
-    name: 'Khan River Monitoring Outpost',
+    nodeId: 'NODE-03-KHAN-RIVER-DIV',
+    name: 'Station 3 — Khan River Diversion Canal',
     location: {
-      latitude: 22.7312,
-      longitude: 75.8711,
-      address: 'Khan River Basin, Sector 4, Indore, MP'
+      latitude: 22.7625,
+      longitude: 75.8412,
+      address: 'Sanwer Road Industrial Area Diversion, Indore, MP'
     },
-    deviceKeyHash: 'dev_device_key_hash_khan',
+    deviceKeyHash: 'dev_device_key_hash_khan_div',
     status: 'Online',
     lastSeen: new Date(Date.now() - 2 * 60000)
+  },
+  {
+    nodeId: 'NODE-04-SIRPUR-WETLAND',
+    name: 'Station 4 — Sirpur Ramsar Wetland',
+    location: {
+      latitude: 22.6989,
+      longitude: 75.8184,
+      address: 'Sirpur Bird Sanctuary Reservoir, Dhar Road, Indore, MP'
+    },
+    deviceKeyHash: 'dev_device_key_hash_sirpur',
+    status: 'Online',
+    lastSeen: new Date(Date.now() - 8 * 60000)
   }
 ];
 
@@ -211,12 +222,12 @@ async function seedDatabase(customUri, options = {}) {
 
       const breachTime = new Date(now - 15 * 60 * 1000);
       readings.push({
-        nodeId: 'NODE-03-INDORE-KHAN-RIVER',
-        pH: 8.9,
-        turbidity: 7.4,
-        tds: 580,
+        nodeId: 'NODE-03-KHAN-RIVER-DIV',
+        pH: 8.20,
+        turbidity: 5.65,
+        tds: 485,
         temperature: 26.2,
-        overallStatus: 'Unsafe',
+        overallStatus: 'Caution',
         timestamp: breachTime,
         createdAt: breachTime
       });
@@ -226,27 +237,27 @@ async function seedDatabase(customUri, options = {}) {
 
       const breachReading = inserted[inserted.length - 1];
       await Alert.findOneAndUpdate(
-        { nodeId: 'NODE-03-INDORE-KHAN-RIVER', parameter: 'turbidity', status: 'Active' },
+        { nodeId: 'NODE-03-KHAN-RIVER-DIV', parameter: 'turbidity', status: 'Active' },
         {
           $set: {
-            nodeId: 'NODE-03-INDORE-KHAN-RIVER',
+            nodeId: 'NODE-03-KHAN-RIVER-DIV',
             readingId: breachReading._id,
             parameter: 'turbidity',
-            value: 7.4,
+            value: 5.65,
             thresholdLimit: 5.0,
             thresholdMin: 0.0,
             thresholdMax: 5.0,
             direction: 'HIGH',
-            severity: 'High',
+            severity: 'Critical',
             status: 'Active',
-            breachCount: 2,
+            breachCount: 3,
             lastBreachedAt: breachTime,
             timestamp: breachTime
           }
         },
         { upsert: true, new: true }
       );
-      console.log('  - Seeded prototype active alert for NODE-03-INDORE-KHAN-RIVER.');
+      console.log('  - Seeded prototype active alert for NODE-03-KHAN-RIVER-DIV.');
     }
   } else {
     console.log('[JalDrishti Seeder] Clean baseline mode: Skipping synthetic readings and demo alerts.');

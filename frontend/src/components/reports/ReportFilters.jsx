@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { DEMO_STATIONS } from '../../utils/demoData';
 
 /**
  * JalDrishti Phase 21: ReportFilters Component
@@ -21,11 +22,17 @@ export default function ReportFilters({
     let mounted = true;
     api.sensor.getNodes()
       .then((res) => {
-        if (mounted && res?.data) {
+        if (mounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
           setNodes(res.data);
+        } else if (mounted) {
+          setNodes(DEMO_STATIONS);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (mounted) {
+          setNodes(DEMO_STATIONS);
+        }
+      });
     return () => {
       mounted = false;
     };

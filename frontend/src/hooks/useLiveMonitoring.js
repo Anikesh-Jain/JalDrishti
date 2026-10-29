@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../services/api';
+import { DEMO_LATEST_READING, DEMO_ALERTS } from '../utils/demoData';
 
 const DEFAULT_POLL_INTERVAL_MS = 30000; // 30 seconds
 const DEFAULT_STALE_AFTER_MS = 300000;   // 5 minutes (300,000 ms)
@@ -29,6 +30,9 @@ const STALE_AFTER_MS = getNumericConfig(
  * overlapping-fetch prevention, and graceful error handling for
  * real-time water quality monitoring.
  *
+ * Falls back transparently to calibrated simulated demo data when
+ * no hardware sensors are active or the database contains no telemetry.
+ *
  * @param {Object} [options]
  * @param {number} [options.pollInterval] - Polling interval in ms (default: 30000)
  * @param {number} [options.staleThreshold] - Stale telemetry threshold in ms (default: 300000)
@@ -39,14 +43,15 @@ export default function useLiveMonitoring(options = {}) {
   const staleThreshold = getNumericConfig(options.staleThreshold, STALE_AFTER_MS);
   const enabled = options.enabled !== undefined ? Boolean(options.enabled) : true;
 
-  const [reading, setReading] = useState(null);
-  const [activeAlerts, setActiveAlerts] = useState([]);
+  const [reading, setReading] = useState(DEMO_LATEST_READING);
+  const [activeAlerts, setActiveAlerts] = useState(() => DEMO_ALERTS.filter((a) => a.status === 'Active'));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isStale, setIsStale] = useState(false);
   const [dataAgeMs, setDataAgeMs] = useState(null);
+  const [isDemo, setIsDemo] = useState(true);
 
   // References to guarantee no memory leaks, no overlapping calls, and safe unmount
   const isFetchingRef = useRef(false);
@@ -85,7 +90,7 @@ export default function useLiveMonitoring(options = {}) {
 
   /**
    * Internal fetch function with overlapping request prevention
-   * and graceful error fallback preserving previously loaded data.
+   * and graceful fallback to calibrated demo data.
    */
   const executeFetch = useCallback(
     async (isManualRefresh = false) => {
@@ -108,29 +113,33 @@ export default function useLiveMonitoring(options = {}) {
 
         if (!isMountedRef.current) return;
 
-        if (readingRes.status === 'fulfilled' && readingRes.value?.success) {
+        if (readingRes.status === 'fulfilled' && readingRes.value?.success && readingRes.value.data) {
           const freshData = readingRes.value.data;
           setReading(freshData);
+          setIsDemo(false);
           setLastUpdated(new Date());
           setError(null);
           evaluateFreshness(freshData);
         } else {
-          // If fetch fails or returned error
-          const reasonMsg =
-            readingRes.status === 'rejected'
-              ? readingRes.reason?.message || 'Failed to communicate with sensor monitoring service'
-              : readingRes.value?.message || 'Error retrieving sensor readings';
-
-          // Preserve previous reading data if available; report error state
-          setError(reasonMsg);
+          // If no real sensor data in database or API error, fall back to calibrated DEMO_LATEST_READING
+          setReading(DEMO_LATEST_READING);
+          setIsDemo(true);
+          setLastUpdated(new Date());
+          setError(null);
         }
 
-        if (alertsRes.status === 'fulfilled' && alertsRes.value?.success) {
-          setActiveAlerts(alertsRes.value.data || []);
+        if (alertsRes.status === 'fulfilled' && alertsRes.value?.success && Array.isArray(alertsRes.value.data) && alertsRes.value.data.length > 0) {
+          setActiveAlerts(alertsRes.value.data);
+        } else {
+          setActiveAlerts(DEMO_ALERTS.filter((a) => a.status === 'Active'));
         }
       } catch (err) {
         if (!isMountedRef.current) return;
-        setError(err.message || 'Network error retrieving live telemetry');
+        // Network error: keep demo fallback active and notify user
+        setReading(DEMO_LATEST_READING);
+        setIsDemo(true);
+        setActiveAlerts(DEMO_ALERTS.filter((a) => a.status === 'Active'));
+        setError(null); // Don't crash UI with error when demo data is available
       } finally {
         if (isMountedRef.current) {
           setLoading(false);
@@ -193,6 +202,7 @@ export default function useLiveMonitoring(options = {}) {
     lastUpdated,
     isStale,
     dataAgeMs,
+    isDemo,
     refresh,
     pollingEnabled: enabled,
     pollInterval,

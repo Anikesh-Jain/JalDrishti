@@ -6,6 +6,7 @@ import CitizenLayout from '../../layouts/CitizenLayout';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import DemoBadge from '../../components/common/DemoBadge';
 import { ReportCard } from '../../components/reports';
 
 /**
@@ -51,6 +52,7 @@ export default function ReportsPage() {
 
   const isAdmin = user?.role === 'Admin';
   const Layout = isAdmin ? AdminLayout : CitizenLayout;
+  const isDemo = readingsData[0]?.isDemo || alertsData[0]?.isDemo;
 
   return (
     <Layout>
@@ -59,9 +61,12 @@ export default function ReportsPage() {
         title="Reporting & Data Export"
         description="Generate and export tabular CSV datasets of historical water quality telemetry and threshold breach alerts."
         badge={
-          <Badge variant="info" size="sm">
-            Tabular Export (FR-16)
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="info" size="sm">
+              Tabular Export (FR-16)
+            </Badge>
+            {isDemo && <DemoBadge text="Simulated Dataset" />}
+          </div>
         }
         actions={
           <Button
@@ -76,6 +81,12 @@ export default function ReportsPage() {
           </Button>
         }
       />
+
+      {isDemo && (
+        <div className="mt-4">
+          <DemoBadge variant="banner" />
+        </div>
+      )}
 
       {/* 2. Educational & Prototype Operational Notice */}
       <div className="my-6 p-4 bg-sky-50 border border-sky-200 rounded-xl flex items-start space-x-3 text-xs text-sky-900">
@@ -94,8 +105,7 @@ export default function ReportsPage() {
             Authoritative Telemetry Export Pipeline
           </p>
           <p className="text-sky-800 leading-relaxed">
-            All exported CSV files contain actual recorded measurements originating from MongoDB.
-            Exports are strictly formatted to <strong>RFC 4180</strong> specifications with special-character escaping.
+            All exported CSV files conform strictly to <strong>RFC 4180</strong> specifications with special-character escaping.
             Queries are bounded to safe limits (up to 1,000 records per export) to maintain responsive server operation.
           </p>
         </div>

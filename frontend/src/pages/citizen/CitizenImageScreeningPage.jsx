@@ -3,9 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import CitizenLayout from '../../layouts/CitizenLayout';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import DemoBadge from '../../components/common/DemoBadge';
 import LoadingState from '../../components/feedback/LoadingState';
 import api from '../../services/api';
 import { ImageIcon, CheckCircleIcon, XCircleIcon } from '../../components/common/Icons';
+import { DEMO_IMAGE_SCREENINGS } from '../../utils/demoData';
 
 /**
  * JalDrishti AI Water Image Screening Page (REM-07 / Reference Image Row 3 Left)
@@ -19,7 +21,7 @@ import { ImageIcon, CheckCircleIcon, XCircleIcon } from '../../components/common
  *   - Confidence score percentage
  *   - Checklist of visual criteria
  *   - Mandatory statutory advisory disclaimer
- * - Screening history log below
+ * - Screening history log below with calibrated demo fallback
  */
 export default function CitizenImageScreeningPage() {
   const { user } = useAuth();
@@ -28,30 +30,38 @@ export default function CitizenImageScreeningPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState({
     status: 'Safe',
-    confidence: 92,
-    assessment: 'Water appears to be clear and clean',
+    confidence: 96,
+    assessment: 'Water sample exhibits high optical clarity with no observable suspended colloidal matter or chemical discoloration.',
     isWaterImage: true,
     checklist: [
       { text: 'No visible contamination', pass: true },
-      { text: 'Clear appearance', pass: true },
+      { text: 'Clear optical profile', pass: true },
       { text: 'Suitable for laboratory verification', pass: true }
     ],
     advisory: 'Advisory only. Visual analysis cannot confirm water is safe for drinking. For statutory confirmation, laboratory or sensor testing is required.',
     preview: '/images/sample-water.jpg'
   });
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(DEMO_IMAGE_SCREENINGS);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [isDemoHistory, setIsDemoHistory] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     async function loadScreeningHistory() {
       try {
         const res = await api.imageScreening.getHistory();
-        if (mounted && res?.data?.records) {
+        if (mounted && res?.data?.records && res.data.records.length > 0) {
           setHistory(res.data.records);
+          setIsDemoHistory(false);
+        } else if (mounted) {
+          setHistory(DEMO_IMAGE_SCREENINGS);
+          setIsDemoHistory(true);
         }
       } catch {
-        // Fallback
+        if (mounted) {
+          setHistory(DEMO_IMAGE_SCREENINGS);
+          setIsDemoHistory(true);
+        }
       } finally {
         if (mounted) setLoadingHistory(false);
       }
@@ -269,7 +279,10 @@ export default function CitizenImageScreeningPage() {
 
         {/* Screening History Table */}
         <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-card">
-          <h3 className="text-base font-bold text-slate-900 mb-3">Historical Screening Log</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-bold text-slate-900">Historical Screening Log</h3>
+            {isDemoHistory && <DemoBadge text="Simulated Log" />}
+          </div>
           {loadingHistory ? (
             <div className="py-8 flex justify-center">
               <LoadingState message="Loading past screening records..." />

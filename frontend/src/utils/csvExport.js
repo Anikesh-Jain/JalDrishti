@@ -49,20 +49,22 @@ export function formatReadingsForCsv(readings = []) {
     'Timestamp',
     'Node ID',
     'pH',
-    'Turbidity',
-    'TDS',
-    'Temperature',
-    'Overall Status'
+    'Turbidity (NTU)',
+    'TDS (ppm)',
+    'Temperature (°C)',
+    'Overall Status',
+    'Data Source'
   ];
 
   const rows = readings.map((r) => [
     r.timestamp ? new Date(r.timestamp).toISOString() : '',
     r.nodeId || '',
     typeof r.pH === 'number' ? r.pH : '',
-    typeof r.turbidity === 'number' ? r.turbidity : '',
-    typeof r.tds === 'number' ? r.tds : '',
-    typeof r.temperature === 'number' ? r.temperature : '',
-    r.overallStatus || 'Safe'
+    typeof r.turbidity === 'number' ? r.turbidity : (typeof r.Turbidity === 'number' ? r.Turbidity : ''),
+    typeof r.tds === 'number' ? r.tds : (typeof r.TDS === 'number' ? r.TDS : ''),
+    typeof r.temperature === 'number' ? r.temperature : (typeof r.Temperature === 'number' ? r.Temperature : ''),
+    r.overallStatus || 'Safe',
+    r.isDemo ? 'Simulated (BIS IS 10500)' : 'Physical IoT'
   ]);
 
   return {
@@ -90,7 +92,8 @@ export function formatAlertsForCsv(alerts = []) {
     'Status',
     'Last Breached At',
     'Resolved At',
-    'Breach Count'
+    'Breach Count',
+    'Data Source'
   ];
 
   const rows = alerts.map((a) => [
@@ -104,7 +107,8 @@ export function formatAlertsForCsv(alerts = []) {
     a.status || 'Active',
     a.lastBreachedAt ? new Date(a.lastBreachedAt).toISOString() : '',
     a.resolvedAt ? new Date(a.resolvedAt).toISOString() : '',
-    a.breachCount || 1
+    a.breachCount || 1,
+    a.isDemo ? 'Simulated (BIS IS 10500)' : 'Physical IoT'
   ]);
 
   return {

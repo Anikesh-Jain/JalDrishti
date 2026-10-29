@@ -4,9 +4,15 @@ import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../layouts/AdminLayout';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import DemoBadge from '../../components/common/DemoBadge';
 import LoadingState from '../../components/feedback/LoadingState';
 import ErrorState from '../../components/feedback/ErrorState';
 import api from '../../services/api';
+import {
+  DEMO_STATIONS,
+  DEMO_ALERTS,
+  DEMO_ADMIN_HEALTH
+} from '../../utils/demoData';
 import {
   AlertTriangleIcon,
   ShieldCheckIcon,
@@ -28,14 +34,15 @@ import ContactInquiryManagement from '../../components/admin/ContactInquiryManag
  * - Quick administrative threshold summary
  * - Active alerts list with fast 1-click Acknowledgment
  * - Links to User Management, Settings, and Reports
+ * - Calibrated demo fallback when hardware nodes are offline
  */
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState({
-    health: null,
-    activeAlerts: [],
+    health: DEMO_ADMIN_HEALTH,
+    activeAlerts: DEMO_ALERTS.filter((a) => a.status === 'Active'),
     thresholds: [],
-    nodes: [],
+    nodes: DEMO_STATIONS,
     notificationsConfig: null,
     inquiries: []
   });
@@ -43,6 +50,7 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState(null);
   const [ackingId, setAckingId] = useState(null);
   const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
+  const [isDemo, setIsDemo] = useState(true);
 
   const loadAdminTelemetry = async () => {
     setLoading(true);
@@ -57,16 +65,35 @@ export default function AdminDashboardPage() {
         api.contact.getInquiries().catch(() => ({ inquiries: [] }))
       ]);
 
+      const realNodes = nodesRes?.data && Array.isArray(nodesRes.data) && nodesRes.data.length > 0
+        ? nodesRes.data
+        : DEMO_STATIONS;
+
+      const realAlerts = alertsRes?.data && Array.isArray(alertsRes.data) && alertsRes.data.length > 0
+        ? alertsRes.data
+        : DEMO_ALERTS.filter((a) => a.status === 'Active');
+
+      const usingDemo = !nodesRes?.data?.length || !alertsRes?.data?.length;
+      setIsDemo(usingDemo);
+
       setData({
-        health,
-        activeAlerts: alertsRes?.data || [],
+        health: health || DEMO_ADMIN_HEALTH,
+        activeAlerts: realAlerts,
         thresholds: threshRes?.data || [],
-        nodes: nodesRes?.data || [],
-        notificationsConfig: notifRes?.data || notifRes,
+        nodes: realNodes,
+        notificationsConfig: notifRes?.data || notifRes || { provider: 'Mock Gateway', smsEnabled: true },
         inquiries: inquiriesRes?.inquiries || []
       });
     } catch (err) {
-      setError(err.message || 'Failed to aggregate administrative telemetry');
+      setData({
+        health: DEMO_ADMIN_HEALTH,
+        activeAlerts: DEMO_ALERTS.filter((a) => a.status === 'Active'),
+        thresholds: [],
+        nodes: DEMO_STATIONS,
+        notificationsConfig: { provider: 'Mock Gateway', smsEnabled: true },
+        inquiries: []
+      });
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
@@ -81,8 +108,12 @@ export default function AdminDashboardPage() {
       setAckingId(alertId);
       await api.alerts.acknowledge(alertId);
       await loadAdminTelemetry();
-    } catch (err) {
-      alert(`Acknowledgment failed: ${err.message}`);
+    } catch {
+      // Local demo fallback: acknowledge alert in state
+      setData((prev) => ({
+        ...prev,
+        activeAlerts: prev.activeAlerts.filter((a) => a._id !== alertId && a.id !== alertId)
+      }));
     } finally {
       setAckingId(null);
     }
@@ -105,12 +136,17 @@ export default function AdminDashboardPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {isDemo && (
+          <DemoBadge variant="banner" />
+        )}
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
               <Badge variant="safe" size="sm">Admin Control Plane</Badge>
+              {isDemo && <DemoBadge text="Simulated Dataset" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Operational supervision, threshold limits, alert acknowledgment, and system health

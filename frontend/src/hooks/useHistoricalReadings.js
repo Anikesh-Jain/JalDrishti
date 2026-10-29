@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../services/api';
+import { getDemoHistoricalReadings } from '../utils/demoData';
 
 /**
  * Standard supported historical time-range filters.
@@ -18,7 +19,7 @@ export const DEFAULT_TIME_RANGE = '24h';
  * JalDrishti Phase 17: useHistoricalReadings Custom Hook
  *
  * Fetches, manages, and transforms bounded historical water-quality readings
- * for Recharts visualization. Strictly avoids continuous polling.
+ * for Recharts visualization. Falls back to calibrated demo data when no telemetry exists.
  *
  * @param {Object} [options]
  * @param {string} [options.initialRange] - Default time range key ('24h')
@@ -30,6 +31,7 @@ export default function useHistoricalReadings(options = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastFetched, setLastFetched] = useState(null);
+  const [isDemo, setIsDemo] = useState(true);
 
   const isMountedRef = useRef(true);
   const isFetchingRef = useRef(false);
@@ -54,7 +56,7 @@ export default function useHistoricalReadings(options = {}) {
 
         if (!isMountedRef.current) return;
 
-        if (response && response.success && Array.isArray(response.data)) {
+        if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
           // Transform readings into formatted points for Recharts
           const formattedPoints = response.data.map((r) => {
             const dateObj = new Date(r.timestamp);
@@ -91,20 +93,36 @@ export default function useHistoricalReadings(options = {}) {
               turbidity: typeof r.turbidity === 'number' && Number.isFinite(r.turbidity) ? Number(r.turbidity.toFixed(2)) : null,
               tds: typeof r.tds === 'number' && Number.isFinite(r.tds) ? Math.round(r.tds) : null,
               temperature: typeof r.temperature === 'number' && Number.isFinite(r.temperature) ? Number(r.temperature.toFixed(1)) : null,
-              overallStatus: r.overallStatus || 'Safe'
+              overallStatus: r.overallStatus || 'Safe',
+              isDemo: false
             };
           });
 
           setData(formattedPoints);
+          setIsDemo(false);
           setLastFetched(new Date());
         } else {
-          setError(response?.message || 'Failed to retrieve historical telemetry records');
-          setData([]);
+          // Fall back to calibrated demo data
+          const demoPoints = getDemoHistoricalReadings({
+            nodeId: options.nodeId || 'NODE-01-INDORE-WARD12',
+            timeRange: rangeConfig.id,
+            limit: rangeConfig.limit
+          });
+          setData(demoPoints);
+          setIsDemo(true);
+          setLastFetched(new Date());
         }
       } catch (err) {
         if (!isMountedRef.current) return;
-        setError(err.message || 'Network error fetching historical water quality trends');
-        setData([]);
+        // Fall back to calibrated demo data on error
+        const demoPoints = getDemoHistoricalReadings({
+          nodeId: options.nodeId || 'NODE-01-INDORE-WARD12',
+          timeRange: rangeConfig.id,
+          limit: rangeConfig.limit
+        });
+        setData(demoPoints);
+        setIsDemo(true);
+        setLastFetched(new Date());
       } finally {
         if (isMountedRef.current) {
           setLoading(false);
@@ -136,6 +154,7 @@ export default function useHistoricalReadings(options = {}) {
     data,
     loading,
     error,
+    isDemo,
     lastFetched,
     refetch: () => fetchHistory(selectedRange)
   };

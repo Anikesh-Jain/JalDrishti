@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,9 +12,17 @@ import {
 import CitizenLayout from '../../layouts/CitizenLayout';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import DemoBadge from '../../components/common/DemoBadge';
 import ChartEmptyState from '../../components/charts/ChartEmptyState';
 import api from '../../services/api';
 import { DownloadIcon } from '../../components/common/Icons';
+import {
+  DEMO_STATIONS,
+  DEMO_LATEST_READINGS_BY_NODE,
+  DEMO_LATEST_READING,
+  getDemoHistoricalReadings,
+  THRESHOLD_BENCHMARKS
+} from '../../utils/demoData';
 
 /**
  * Custom readable tooltip component for individual parameter trend graphs
@@ -39,10 +47,10 @@ function ParameterTooltip({ active, payload, label, unit, name }) {
     };
 
     return (
-      <div className="bg-white/95 backdrop-blur-sm border border-[#BAE6FD] p-3 rounded-xl shadow-lg text-xs space-y-1.5 min-w-[160px]">
-        <div className="text-slate-400 font-mono text-[11px] pb-1 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white/95 backdrop-blur-md border border-[#BAE6FD] p-3 rounded-xl shadow-lg text-xs space-y-1.5 min-w-[160px]">
+        <div className="text-slate-500 font-mono text-[11px] pb-1 border-b border-slate-100 flex items-center justify-between">
           <span>{label}</span>
-          <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${getStatusStyle(status)}`}>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded border font-semibold ${getStatusStyle(status)}`}>
             {status}
           </span>
         </div>
@@ -59,13 +67,14 @@ function ParameterTooltip({ active, payload, label, unit, name }) {
 }
 
 export default function CitizenTrendsPage() {
-  const [stations, setStations] = useState([]);
+  const [stations, setStations] = useState(DEMO_STATIONS);
   const [selectedStation, setSelectedStation] = useState('NODE-01-INDORE-WARD12');
   const [timeRange, setTimeRange] = useState('24H');
   const [readings, setReadings] = useState([]);
-  const [latestReading, setLatestReading] = useState(null);
+  const [latestReading, setLatestReading] = useState(DEMO_LATEST_READINGS_BY_NODE['NODE-01-INDORE-WARD12']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDemo, setIsDemo] = useState(true);
 
   // Load available sensor stations
   useEffect(() => {
@@ -76,16 +85,25 @@ export default function CitizenTrendsPage() {
         if (mounted && res?.data?.length) {
           setStations(res.data);
           setSelectedStation(res.data[0].nodeId);
+          setIsDemo(false);
+        } else if (mounted) {
+          setStations(DEMO_STATIONS);
+          setSelectedStation(DEMO_STATIONS[0].nodeId);
+          setIsDemo(true);
         }
-      } catch (err) {
-        console.warn('Failed to load stations list:', err.message);
+      } catch {
+        if (mounted) {
+          setStations(DEMO_STATIONS);
+          setSelectedStation(DEMO_STATIONS[0].nodeId);
+          setIsDemo(true);
+        }
       }
     }
     loadStations();
     return () => { mounted = false; };
   }, []);
 
-  // Fetch actual historical telemetry for the selected station and time range
+  // Fetch telemetry for the selected station and time range with calibrated demo fallback
   useEffect(() => {
     let mounted = true;
 
@@ -93,7 +111,6 @@ export default function CitizenTrendsPage() {
       setLoading(true);
       setError(null);
 
-      // Compute start boundary according to selected date range filter
       const now = Date.now();
       let fromDate;
       if (timeRange === '24H') {
@@ -110,12 +127,12 @@ export default function CitizenTrendsPage() {
             nodeId: selectedStation,
             from: fromDate,
             limit: 500
-          }),
+          }).catch(() => null),
           api.sensor.getLatestReading(selectedStation).catch(() => null)
         ]);
 
         if (mounted) {
-          if (historyRes?.data && Array.isArray(historyRes.data)) {
+          if (historyRes?.data && Array.isArray(historyRes.data) && historyRes.data.length > 0) {
             const formatted = historyRes.data.map((r) => {
               const d = new Date(r.timestamp);
               const timeLabel = timeRange === '24H'
@@ -129,23 +146,31 @@ export default function CitizenTrendsPage() {
                 TDS: typeof r.tds === 'number' && Number.isFinite(r.tds) ? Math.round(r.tds) : null,
                 Turbidity: typeof r.turbidity === 'number' && Number.isFinite(r.turbidity) ? Number(r.turbidity.toFixed(2)) : null,
                 Temperature: typeof r.temperature === 'number' && Number.isFinite(r.temperature) ? Number(r.temperature.toFixed(1)) : null,
-                overallStatus: r.overallStatus || 'Safe'
+                overallStatus: r.overallStatus || 'Safe',
+                isDemo: false
               };
             });
             setReadings(formatted);
+            setIsDemo(false);
           } else {
-            // Honest empty state: no telemetry returned
-            setReadings([]);
+            // Calibrated realistic demo historical telemetry
+            const demoData = getDemoHistoricalReadings({ nodeId: selectedStation, timeRange });
+            setReadings(demoData);
+            setIsDemo(true);
           }
 
           if (latestRes?.data) {
             setLatestReading(latestRes.data);
+          } else {
+            setLatestReading(DEMO_LATEST_READINGS_BY_NODE[selectedStation] || DEMO_LATEST_READING);
           }
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
-          setError(err.message || 'Failed to retrieve telemetry records from backend');
-          setReadings([]);
+          const demoData = getDemoHistoricalReadings({ nodeId: selectedStation, timeRange });
+          setReadings(demoData);
+          setLatestReading(DEMO_LATEST_READINGS_BY_NODE[selectedStation] || DEMO_LATEST_READING);
+          setIsDemo(true);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -156,12 +181,31 @@ export default function CitizenTrendsPage() {
     return () => { mounted = false; };
   }, [selectedStation, timeRange]);
 
-  // Export actual telemetry to CSV
+  // Compute parameter statistics for current time range
+  const calcStats = (key) => {
+    const vals = readings.map((r) => r[key]).filter((v) => typeof v === 'number' && Number.isFinite(v));
+    if (!vals.length) return { min: '—', max: '—', avg: '—' };
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return {
+      min: key === 'TDS' ? Math.round(min) : min.toFixed(2),
+      max: key === 'TDS' ? Math.round(max) : max.toFixed(2),
+      avg: key === 'TDS' ? Math.round(avg) : avg.toFixed(2)
+    };
+  };
+
+  const phStats = useMemo(() => calcStats('pH'), [readings]);
+  const turbidityStats = useMemo(() => calcStats('Turbidity'), [readings]);
+  const tdsStats = useMemo(() => calcStats('TDS'), [readings]);
+  const tempStats = useMemo(() => calcStats('Temperature'), [readings]);
+
+  // Export telemetry to RFC 4180 compliant CSV
   const handleDownloadCSV = () => {
     if (!readings.length) return;
-    const header = 'Timestamp,Time,pH,TDS (ppm),Turbidity (NTU),Temperature (°C),Overall Status\n';
+    const header = 'Timestamp,Time,Station_ID,pH,TDS_ppm,Turbidity_NTU,Temperature_C,Overall_Status,Data_Source\n';
     const rows = readings
-      .map((r) => `"${r.timestamp || ''}","${r.time}","${r.pH ?? ''}","${r.TDS ?? ''}","${r.Turbidity ?? ''}","${r.Temperature ?? ''}","${r.overallStatus}"`)
+      .map((r) => `"${r.timestamp || ''}","${r.time}","${selectedStation}","${r.pH ?? ''}","${r.TDS ?? ''}","${r.Turbidity ?? ''}","${r.Temperature ?? ''}","${r.overallStatus}","${isDemo ? 'Simulated' : 'Actual'}"`)
       .join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -173,21 +217,29 @@ export default function CitizenTrendsPage() {
     document.body.removeChild(link);
   };
 
-  // Helper to determine if a parameter has valid readings
   const hasParamData = (key) => readings.some((r) => typeof r[key] === 'number' && Number.isFinite(r[key]));
+
+  const currentStationObj = stations.find((s) => s.nodeId === selectedStation) || stations[0];
 
   return (
     <CitizenLayout>
       <div className="space-y-6">
+        {isDemo && (
+          <DemoBadge variant="banner" />
+        )}
+
         {/* Header matching pale-blue / aqua branding */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-[#BAE6FD]">
           <div>
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-1">
-              <span>Telemetry Telemetry &amp; Analytics</span>
+              <span>Telemetry Analytics &amp; Trends</span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Water Quality Telemetry</h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Water Quality Telemetry</h1>
+              {isDemo && <DemoBadge text="Simulated Dataset" />}
+            </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Independent time-series graphs for physical and chemical parameters
+              Four independent time-series charts with dedicated axes and Bureau of Indian Standards (BIS IS 10500:2012) thresholds
             </p>
           </div>
 
@@ -197,7 +249,7 @@ export default function CitizenTrendsPage() {
             <select
               value={selectedStation}
               onChange={(e) => setSelectedStation(e.target.value)}
-              className="px-3 py-2 text-xs font-semibold bg-white border border-[#BAE6FD] rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0284C7] shadow-xs"
+              className="px-3 py-2 text-xs font-semibold bg-white border border-[#BAE6FD] rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0284C7] shadow-2xs"
               aria-label="Select Monitoring Station"
             >
               {stations.map((s) => (
@@ -205,13 +257,10 @@ export default function CitizenTrendsPage() {
                   {s.name || s.nodeId}
                 </option>
               ))}
-              {stations.length === 0 && (
-                <option value="NODE-01-INDORE-WARD12">Station 1 - River Ganga (Indore)</option>
-              )}
             </select>
 
             {/* Common Date Range Filter */}
-            <div className="inline-flex rounded-xl bg-white p-1 border border-[#BAE6FD] shadow-xs">
+            <div className="inline-flex rounded-xl bg-white p-1 border border-[#BAE6FD] shadow-2xs">
               {['24H', '7D', '30D'].map((range) => (
                 <button
                   key={range}
@@ -254,13 +303,12 @@ export default function CitizenTrendsPage() {
           </div>
         )}
 
-        {/* Top Metric Cards: 4 Parameters with latest readings */}
+        {/* Top Metric Cards: 4 Parameters with latest readings for the selected station */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: pH */}
           {/* Card 1: pH */}
           <div className="p-5 rounded-2xl bg-white border border-[#BAE6FD] shadow-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600">pH Level</span>
+              <span className="text-xs font-bold text-slate-600">Acidity (pH)</span>
               <Badge
                 variant={
                   latestReading?.pH !== undefined
@@ -271,15 +319,15 @@ export default function CitizenTrendsPage() {
               >
                 {latestReading?.pH !== undefined
                   ? (latestReading.pH < 6.5 || latestReading.pH > 8.5 ? 'Breach' : 'Normal')
-                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
+                  : 'Normal'}
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
-                {latestReading?.pH !== undefined ? latestReading.pH.toFixed(1) : (readings[readings.length - 1]?.pH ?? '—')}
+              <span className="text-3xl font-black font-mono text-slate-900">
+                {latestReading?.pH !== undefined ? latestReading.pH.toFixed(2) : (readings[readings.length - 1]?.pH ?? '—')}
               </span>
               <p className="text-[11px] text-slate-500 mt-1">
-                Acceptable: 6.5 — 8.5 pH (BIS IS 10500)
+                Permissible: 6.5 — 8.5 pH (BIS IS 10500)
               </p>
             </div>
           </div>
@@ -297,14 +345,14 @@ export default function CitizenTrendsPage() {
                 size="sm"
               >
                 {latestReading?.turbidity !== undefined
-                  ? (latestReading.turbidity > 5.0 ? 'Caution' : 'Normal')
-                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
+                  ? (latestReading.turbidity > 5.0 ? 'Breach' : 'Clear')
+                  : 'Clear'}
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-black font-mono text-slate-900">
                 {latestReading?.turbidity !== undefined
-                  ? `${latestReading.turbidity.toFixed(1)} NTU`
+                  ? `${latestReading.turbidity.toFixed(2)} NTU`
                   : readings[readings.length - 1]?.Turbidity !== null && readings[readings.length - 1]?.Turbidity !== undefined
                   ? `${readings[readings.length - 1].Turbidity} NTU`
                   : '—'}
@@ -322,18 +370,18 @@ export default function CitizenTrendsPage() {
               <Badge
                 variant={
                   latestReading?.tds !== undefined
-                    ? (latestReading.tds > 500 ? 'unsafe' : 'safe')
+                    ? (latestReading.tds > 500 ? 'caution' : 'safe')
                     : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
                 {latestReading?.tds !== undefined
-                  ? (latestReading.tds > 500 ? 'Caution' : 'Good')
-                  : (readings.length > 0 ? 'Good' : 'Awaiting Telemetry')}
+                  ? (latestReading.tds > 500 ? 'Elevated' : 'Good')
+                  : 'Good'}
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-black font-mono text-slate-900">
                 {latestReading?.tds !== undefined
                   ? `${latestReading.tds} ppm`
                   : readings[readings.length - 1]?.TDS !== null && readings[readings.length - 1]?.TDS !== undefined
@@ -341,7 +389,7 @@ export default function CitizenTrendsPage() {
                   : '—'}
               </span>
               <p className="text-[11px] text-slate-500 mt-1">
-                Acceptable: ≤ 500 ppm / mg/L
+                Acceptable ceiling: ≤ 500 ppm / mg/L
               </p>
             </div>
           </div>
@@ -353,18 +401,18 @@ export default function CitizenTrendsPage() {
               <Badge
                 variant={
                   latestReading?.temperature !== undefined
-                    ? (latestReading.temperature > 35.0 ? 'unsafe' : 'safe')
+                    ? (latestReading.temperature > 35.0 ? 'caution' : 'safe')
                     : (readings.length > 0 ? 'safe' : 'neutral')
                 }
                 size="sm"
               >
                 {latestReading?.temperature !== undefined
                   ? (latestReading.temperature > 35.0 ? 'Caution' : 'Normal')
-                  : (readings.length > 0 ? 'Normal' : 'Awaiting Telemetry')}
+                  : 'Normal'}
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-black font-mono text-slate-900">
                 {latestReading?.temperature !== undefined
                   ? `${latestReading.temperature.toFixed(1)} °C`
                   : readings[readings.length - 1]?.Temperature !== null && readings[readings.length - 1]?.Temperature !== undefined
@@ -378,28 +426,33 @@ export default function CitizenTrendsPage() {
           </div>
         </div>
 
-        {/* =========================================================================
-            FOUR SEPARATE PARAMETER TREND GRAPHS
-            Each graph has an independent Y-axis, time axis, correct units, reference limits,
-            and honest empty/error states without fabricated points.
-            ========================================================================= */}
+        {/* Four Separate Independent Parameter Trend Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* GRAPH 1: pH Trend */}
           <div className="p-6 rounded-2xl bg-white border border-[#BAE6FD] shadow-card flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#0284C7]" />
-                  <h3 className="text-base font-bold text-slate-900">Graph 1: pH Trend</h3>
+            <div>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#0284C7]" />
+                    <h3 className="text-base font-bold text-slate-900">Graph 1: pH (Acidity / Alkalinity)</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Acceptable reference range: 6.5 – 8.5 pH (BIS IS 10500:2012 Clause 4, Table 1)
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Hydrogen-ion concentration • Acceptable reference range: 6.5 – 8.5 pH (BIS IS 10500:2012)
-                </p>
+                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-[#E0F7FF] text-[#0284C7] shrink-0 border border-[#BAE6FD]">
+                  pH Scale
+                </span>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#E0F7FF] text-[#0284C7] shrink-0 border border-[#BAE6FD]">
-                pH scale
-              </span>
+
+              {/* Statistics Row */}
+              <div className="grid grid-cols-3 gap-2 mt-3 p-2 rounded-xl bg-slate-50 text-center text-xs">
+                <div><span className="text-[10px] text-slate-400 block">Min</span><span className="font-mono font-bold text-slate-700">{phStats.min}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Max</span><span className="font-mono font-bold text-slate-700">{phStats.max}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Mean</span><span className="font-mono font-bold text-slate-700">{phStats.avg}</span></div>
+              </div>
             </div>
 
             <div className="h-72 w-full pt-4">
@@ -411,7 +464,13 @@ export default function CitizenTrendsPage() {
                 <ChartEmptyState parameterName="pH" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                  <AreaChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                    <defs>
+                      <linearGradient id="phGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0284C7" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#0284C7" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis
                       dataKey="time"
@@ -424,11 +483,10 @@ export default function CitizenTrendsPage() {
                       stroke="#94a3b8"
                       fontSize={11}
                       tickLine={false}
-                      domain={[5.0, 10.0]}
+                      domain={[5.5, 9.5]}
                       label={{ value: 'pH', angle: -90, position: 'insideLeft', offset: 12, fill: '#64748b', fontSize: 11 }}
                     />
                     <Tooltip content={<ParameterTooltip unit="" name="pH" />} />
-                    {/* BIS IS 10500 Reference Thresholds */}
                     <ReferenceLine
                       y={6.5}
                       stroke="#0284C7"
@@ -443,16 +501,17 @@ export default function CitizenTrendsPage() {
                       strokeWidth={1.5}
                       label={{ value: 'Max Limit (8.5)', fill: '#0284C7', fontSize: 10, position: 'insideTopLeft' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="pH"
                       stroke="#0284C7"
                       strokeWidth={2.5}
-                      dot={{ r: 3, fill: '#0284C7' }}
+                      fill="url(#phGrad)"
+                      dot={{ r: 2.5, fill: '#0284C7' }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -460,19 +519,28 @@ export default function CitizenTrendsPage() {
 
           {/* GRAPH 2: Turbidity Trend */}
           <div className="p-6 rounded-2xl bg-white border border-[#BAE6FD] shadow-card flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#D97706]" />
-                  <h3 className="text-base font-bold text-slate-900">Graph 2: Turbidity Trend</h3>
+            <div>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#D97706]" />
+                    <h3 className="text-base font-bold text-slate-900">Graph 2: Turbidity Trend</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Optical clarity in NTU • Desirable: ≤ 1.0 NTU • Permissible limit: ≤ 5.0 NTU (BIS IS 10500)
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Water clarity in Nephelometric Turbidity Units (NTU) • Desirable: ≤ 1.0 NTU • Permissible: ≤ 5.0 NTU
-                </p>
+                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-700 shrink-0 border border-amber-200">
+                  NTU
+                </span>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 shrink-0 border border-amber-200">
-                NTU
-              </span>
+
+              {/* Statistics Row */}
+              <div className="grid grid-cols-3 gap-2 mt-3 p-2 rounded-xl bg-slate-50 text-center text-xs">
+                <div><span className="text-[10px] text-slate-400 block">Min</span><span className="font-mono font-bold text-slate-700">{turbidityStats.min}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Max</span><span className="font-mono font-bold text-slate-700">{turbidityStats.max}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Mean</span><span className="font-mono font-bold text-slate-700">{turbidityStats.avg}</span></div>
+              </div>
             </div>
 
             <div className="h-72 w-full pt-4">
@@ -484,7 +552,13 @@ export default function CitizenTrendsPage() {
                 <ChartEmptyState parameterName="turbidity" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                  <AreaChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                    <defs>
+                      <linearGradient id="turbGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#D97706" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#D97706" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis
                       dataKey="time"
@@ -497,11 +571,10 @@ export default function CitizenTrendsPage() {
                       stroke="#94a3b8"
                       fontSize={11}
                       tickLine={false}
-                      domain={[0, 'auto']}
+                      domain={[0, 8.0]}
                       label={{ value: 'Turbidity (NTU)', angle: -90, position: 'insideLeft', offset: 12, fill: '#64748b', fontSize: 11 }}
                     />
                     <Tooltip content={<ParameterTooltip unit="NTU" name="Turbidity" />} />
-                    {/* BIS IS 10500 Turbidity Limits */}
                     <ReferenceLine
                       y={1.0}
                       stroke="#10B981"
@@ -516,16 +589,17 @@ export default function CitizenTrendsPage() {
                       strokeWidth={1.5}
                       label={{ value: 'Permissible Max (5.0 NTU)', fill: '#B45309', fontSize: 10, position: 'insideTopRight' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="Turbidity"
                       stroke="#D97706"
                       strokeWidth={2.5}
-                      dot={{ r: 3, fill: '#D97706' }}
+                      fill="url(#turbGrad)"
+                      dot={{ r: 2.5, fill: '#D97706' }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -533,19 +607,28 @@ export default function CitizenTrendsPage() {
 
           {/* GRAPH 3: TDS Trend */}
           <div className="p-6 rounded-2xl bg-white border border-[#BAE6FD] shadow-card flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#059669]" />
-                  <h3 className="text-base font-bold text-slate-900">Graph 3: TDS Trend</h3>
+            <div>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#059669]" />
+                    <h3 className="text-base font-bold text-slate-900">Graph 3: Total Dissolved Solids (TDS)</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Inorganic salts in ppm (mg/L) • Acceptable: ≤ 500 ppm • Desirable: &lt; 300 ppm (BIS IS 10500)
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Total Dissolved Solids in ppm (mg/L) • Acceptable: ≤ 500 ppm • Desirable: &lt; 300 ppm
-                </p>
+                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 shrink-0 border border-emerald-200">
+                  ppm (mg/L)
+                </span>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 shrink-0 border border-emerald-200">
-                ppm (mg/L)
-              </span>
+
+              {/* Statistics Row */}
+              <div className="grid grid-cols-3 gap-2 mt-3 p-2 rounded-xl bg-slate-50 text-center text-xs">
+                <div><span className="text-[10px] text-slate-400 block">Min</span><span className="font-mono font-bold text-slate-700">{tdsStats.min}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Max</span><span className="font-mono font-bold text-slate-700">{tdsStats.max}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Mean</span><span className="font-mono font-bold text-slate-700">{tdsStats.avg}</span></div>
+              </div>
             </div>
 
             <div className="h-72 w-full pt-4">
@@ -557,7 +640,13 @@ export default function CitizenTrendsPage() {
                 <ChartEmptyState parameterName="total dissolved solids (TDS)" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                  <AreaChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                    <defs>
+                      <linearGradient id="tdsGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#059669" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis
                       dataKey="time"
@@ -570,11 +659,10 @@ export default function CitizenTrendsPage() {
                       stroke="#94a3b8"
                       fontSize={11}
                       tickLine={false}
-                      domain={[0, 'auto']}
+                      domain={[100, 600]}
                       label={{ value: 'TDS (ppm)', angle: -90, position: 'insideLeft', offset: 12, fill: '#64748b', fontSize: 11 }}
                     />
                     <Tooltip content={<ParameterTooltip unit="ppm" name="TDS" />} />
-                    {/* BIS IS 10500 Acceptable TDS Limit */}
                     <ReferenceLine
                       y={500}
                       stroke="#059669"
@@ -589,16 +677,17 @@ export default function CitizenTrendsPage() {
                       strokeWidth={1}
                       label={{ value: 'Desirable (< 300 ppm)', fill: '#059669', fontSize: 10, position: 'insideBottomRight' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="TDS"
                       stroke="#059669"
                       strokeWidth={2.5}
-                      dot={{ r: 3, fill: '#059669' }}
+                      fill="url(#tdsGrad)"
+                      dot={{ r: 2.5, fill: '#059669' }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -606,19 +695,28 @@ export default function CitizenTrendsPage() {
 
           {/* GRAPH 4: Temperature Trend */}
           <div className="p-6 rounded-2xl bg-white border border-[#BAE6FD] shadow-card flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#EF4444]" />
-                  <h3 className="text-base font-bold text-slate-900">Graph 4: Water Temperature Trend</h3>
+            <div>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#EF4444]" />
+                    <h3 className="text-base font-bold text-slate-900">Graph 4: Water Temperature</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Thermal telemetry in °C • Configured safety threshold: ≤ 35.0 °C • Ambient range: 10 – 40 °C
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Thermal telemetry in °C • Configured safety limit: ≤ 35.0 °C • Ambient delivery: 10 – 40 °C
-                </p>
+                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-rose-50 text-rose-700 shrink-0 border border-rose-200">
+                  °C
+                </span>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 shrink-0 border border-rose-200">
-                °C
-              </span>
+
+              {/* Statistics Row */}
+              <div className="grid grid-cols-3 gap-2 mt-3 p-2 rounded-xl bg-slate-50 text-center text-xs">
+                <div><span className="text-[10px] text-slate-400 block">Min</span><span className="font-mono font-bold text-slate-700">{tempStats.min}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Max</span><span className="font-mono font-bold text-slate-700">{tempStats.max}</span></div>
+                <div><span className="text-[10px] text-slate-400 block">Mean</span><span className="font-mono font-bold text-slate-700">{tempStats.avg}</span></div>
+              </div>
             </div>
 
             <div className="h-72 w-full pt-4">
@@ -630,7 +728,13 @@ export default function CitizenTrendsPage() {
                 <ChartEmptyState parameterName="water temperature" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                  <AreaChart data={readings} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                    <defs>
+                      <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis
                       dataKey="time"
@@ -643,11 +747,10 @@ export default function CitizenTrendsPage() {
                       stroke="#94a3b8"
                       fontSize={11}
                       tickLine={false}
-                      domain={[0, 45]}
+                      domain={[15, 35]}
                       label={{ value: 'Temp (°C)', angle: -90, position: 'insideLeft', offset: 12, fill: '#64748b', fontSize: 11 }}
                     />
                     <Tooltip content={<ParameterTooltip unit="°C" name="Temperature" />} />
-                    {/* Configured Temperature Threshold */}
                     <ReferenceLine
                       y={35.0}
                       stroke="#EF4444"
@@ -655,16 +758,17 @@ export default function CitizenTrendsPage() {
                       strokeWidth={1.5}
                       label={{ value: 'Threshold Limit (35.0 °C)', fill: '#DC2626', fontSize: 10, position: 'insideTopLeft' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="Temperature"
                       stroke="#EF4444"
                       strokeWidth={2.5}
-                      dot={{ r: 3, fill: '#EF4444' }}
+                      fill="url(#tempGrad)"
+                      dot={{ r: 2.5, fill: '#EF4444' }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </div>
