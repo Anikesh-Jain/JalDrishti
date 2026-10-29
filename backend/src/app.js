@@ -72,6 +72,16 @@ if (env.isDevelopment) {
 app.use(express.json({ limit: env.BODY_LIMIT || '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: env.BODY_LIMIT || '10kb' }));
 
+// Root Service Entrypoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to JalDrishti API — IoT Water Quality Monitoring Platform',
+    version: 'v1.0.0',
+    status: 'operational',
+    health: '/health'
+  });
+});
+
 // Health Check Endpoint (public, lightweight operational check)
 app.get('/health', (req, res) => {
   const { isConnected } = require('./config/db');
