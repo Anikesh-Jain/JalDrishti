@@ -2,7 +2,8 @@ const crypto = require('crypto');
 const { User } = require('../models');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { generateToken } = require('../utils/jwt');
-const { verifyGoogleIdToken } = require('../services/googleAuthService');
+const googleAuthService = require('../services/googleAuthService');
+const { isDesignatedAdminEmail } = require('../utils/adminEmail');
 const { sendPasswordResetEmail } = require('../services/emailService');
 const { isConnected } = require('../config/db');
 
@@ -206,7 +207,7 @@ const googleAuth = async (req, res) => {
   // Cryptographically verify Google ID token with google-auth-library
   let googleProfile;
   try {
-    googleProfile = await verifyGoogleIdToken(credential.trim());
+    googleProfile = await googleAuthService.verifyGoogleIdToken(credential.trim());
   } catch (verifyError) {
     console.warn('[AuthController Google Token Verification Failed]:', verifyError.message);
     return res.status(401).json({
@@ -214,11 +215,17 @@ const googleAuth = async (req, res) => {
     });
   }
 
-  const { googleId, email, name } = googleProfile;
+  const { googleId, email, name, picture, emailVerified } = googleProfile;
 
   if (!email) {
     return res.status(400).json({
       error: 'Google account does not provide an email address'
+    });
+  }
+
+  if (emailVerified === false) {
+    return res.status(401).json({
+      error: 'Google account email address is not verified'
     });
   }
 
@@ -231,6 +238,8 @@ const googleAuth = async (req, res) => {
 
   try {
     const normalizedEmail = email.toLowerCase().trim();
+    // Server-side admin recognition strictly based on verified Google email matching ADMIN_EMAIL
+    const isPrimaryAdmin = emailVerified === true && isDesignatedAdminEmail(normalizedEmail);
 
     // 1. Check if user with matching googleId already exists
     let user = await User.findOne({ googleId });
@@ -241,21 +250,34 @@ const googleAuth = async (req, res) => {
 
       if (user) {
         user.googleId = googleId;
+        if (picture && !user.avatar) {
+          user.avatar = picture;
+        }
+        if (isPrimaryAdmin && user.role !== 'Admin') {
+          user.role = 'Admin';
+        }
         user.lastLogin = new Date();
         await user.save();
       } else {
-        // 3. Provision new user strictly defaulting to Citizen role
+        // 3. Provision new user: Admin only if verified Google email matches ADMIN_EMAIL, else Citizen
         user = await User.create({
           name: name || 'Google User',
           email: normalizedEmail,
           googleId,
-          role: 'Citizen',
+          avatar: picture || null,
+          role: isPrimaryAdmin ? 'Admin' : 'Citizen',
           passwordHash: null,
           status: 'Active',
           lastLogin: new Date()
         });
       }
     } else {
+      if (picture && !user.avatar) {
+        user.avatar = picture;
+      }
+      if (isPrimaryAdmin && user.role !== 'Admin') {
+        user.role = 'Admin';
+      }
       user.lastLogin = new Date();
       await user.save();
     }

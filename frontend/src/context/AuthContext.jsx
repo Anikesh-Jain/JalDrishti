@@ -67,6 +67,16 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  const clearSessionScopedState = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem('jaldrishti_onboarding_dismissed');
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+  }, []);
+
   /**
    * Authenticate with email and password
    * Calls POST /api/auth/login
@@ -74,13 +84,14 @@ export function AuthProvider({ children }) {
   const login = useCallback(async ({ email, password }) => {
     const response = await api.auth.login({ email, password });
     if (response && response.token && response.user) {
+      clearSessionScopedState();
       setAuthToken(response.token);
       setToken(response.token);
       setUser(response.user);
       return response;
     }
     throw new Error('Authentication succeeded but invalid response structure received');
-  }, []);
+  }, [clearSessionScopedState]);
 
   /**
    * Fast-track demo login for evaluation
@@ -89,13 +100,14 @@ export function AuthProvider({ children }) {
   const demoLogin = useCallback(async (role) => {
     const response = await api.auth.demoLogin(role);
     if (response && response.token && response.user) {
+      clearSessionScopedState();
       setAuthToken(response.token);
       setToken(response.token);
       setUser(response.user);
       return response;
     }
     throw new Error('Demo authentication succeeded but invalid response structure received');
-  }, []);
+  }, [clearSessionScopedState]);
 
 
   /**
@@ -112,13 +124,14 @@ export function AuthProvider({ children }) {
     };
     const response = await api.auth.register(payload);
     if (response && response.token && response.user) {
+      clearSessionScopedState();
       setAuthToken(response.token);
       setToken(response.token);
       setUser(response.user);
       return response;
     }
     throw new Error('Registration succeeded but invalid response structure received');
-  }, []);
+  }, [clearSessionScopedState]);
 
   /**
    * Authenticate with Google ID Token credential
@@ -130,13 +143,14 @@ export function AuthProvider({ children }) {
     }
     const response = await api.auth.google(credential);
     if (response && response.token && response.user) {
+      clearSessionScopedState();
       setAuthToken(response.token);
       setToken(response.token);
       setUser(response.user);
       return response;
     }
     throw new Error('Google authentication succeeded but invalid response structure received');
-  }, []);
+  }, [clearSessionScopedState]);
 
   /**
    * Update profile information
@@ -181,13 +195,23 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
-   * Logout current user and clear stored tokens
+   * Logout current user, clear stored tokens, and disable Google auto-select
+   * so switching accounts cleanly refreshes roles and permissions.
    */
   const logout = useCallback(() => {
     setAuthToken(null);
     setToken(null);
     setUser(null);
-  }, []);
+    clearSessionScopedState();
+    setDeviceSetupModal({ isOpen: false, step: 'initial' });
+    try {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id?.disableAutoSelect) {
+        window.google.accounts.id.disableAutoSelect();
+      }
+    } catch {
+      // Ignore GIS cleanup errors
+    }
+  }, [clearSessionScopedState]);
 
   // Integrated Device Onboarding & Setup modal state
   const [deviceSetupModal, setDeviceSetupModal] = useState({

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { User } = require('../models');
 const { hashPassword } = require('../utils/password');
+const { isDesignatedAdminEmail } = require('../utils/adminEmail');
 
 /**
  * JalDrishti User Management Controller (Admin-Only RBAC)
@@ -128,12 +129,19 @@ const updateUser = async (req, res, next) => {
       if (req.user._id.toString() === user._id.toString() && role !== 'Admin') {
         return res.status(400).json({ error: 'Administrators cannot remove their own administrator privileges' });
       }
+      // Protect primary designated ADMIN_EMAIL account from demotion
+      if (isDesignatedAdminEmail(user.email) && role !== 'Admin') {
+        return res.status(400).json({ error: 'Cannot remove Administrator privileges from the designated primary administrator account' });
+      }
       user.role = role;
     }
 
     if (status && ['Active', 'Inactive'].includes(status)) {
       if (req.user._id.toString() === user._id.toString() && status === 'Inactive') {
         return res.status(400).json({ error: 'Administrators cannot deactivate their own account' });
+      }
+      if (isDesignatedAdminEmail(user.email) && status === 'Inactive') {
+        return res.status(400).json({ error: 'Cannot deactivate the designated primary administrator account' });
       }
       user.status = status;
     }
@@ -192,7 +200,14 @@ const deleteUser = async (req, res, next) => {
       return res.status(404).json({ error: 'User not found or already deleted' });
     }
 
-    // Safeguard 2: Prevent deleting the last remaining Admin account
+    // Safeguard 2: Protect designated primary ADMIN_EMAIL account from deletion
+    if (isDesignatedAdminEmail(targetUser.email)) {
+      return res.status(400).json({
+        error: 'Cannot delete the designated primary Administrator account.'
+      });
+    }
+
+    // Safeguard 3: Prevent deleting the last remaining Admin account
     if (targetUser.role === 'Admin') {
       const adminCount = await User.countDocuments({ role: 'Admin' });
       if (adminCount <= 1) {

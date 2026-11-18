@@ -66,7 +66,7 @@ export function AlertProvider({ children }) {
 
   useEffect(() => {
     refreshAlerts();
-  }, [refreshAlerts]);
+  }, [refreshAlerts, user?._id, user?.role]);
 
   // Mark an individual alert as read
   const markAlertAsRead = useCallback((alertId) => {

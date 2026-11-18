@@ -21,3 +21,5 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
+      - key: ADMIN_EMAIL
+        value: anikeshjainxtech@gmail.com

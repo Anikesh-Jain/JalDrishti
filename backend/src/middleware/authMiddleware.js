@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { verifyJwtToken } = require('../utils/jwt');
+const { isDesignatedAdminEmail } = require('../utils/adminEmail');
 const { User } = require('../models');
 
 /**
@@ -47,6 +48,12 @@ const authenticate = async (req, res, next) => {
     const user = await User.findById(decoded.userId).select('-passwordHash');
     if (!user) {
       return res.status(401).json({ error: 'User account no longer exists' });
+    }
+
+    // Automatically synchronize Admin role for Google-verified designated primary admin accounts
+    if (user.googleId && isDesignatedAdminEmail(user.email) && user.role !== 'Admin') {
+      await User.updateOne({ _id: user._id }, { $set: { role: 'Admin' } });
+      user.role = 'Admin';
     }
 
     req.user = user;

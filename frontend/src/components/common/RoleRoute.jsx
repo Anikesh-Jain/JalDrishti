@@ -78,7 +78,7 @@ export default function RoleRoute({ allowedRoles = ['Admin'], children }) {
           </div>
 
           <p className="text-[11px] text-slate-400 mt-4">
-            Default Evaluator Admin: <code className="text-slate-600 font-mono">admin@jaldrishti.org</code>
+            Administrator access is granted exclusively to server-verified Administrator accounts.
           </p>
         </Card>
       </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAlertContext } from '../context/AlertContext';
 import api from '../services/api';
-import { MapPinIcon, EyeIcon } from '../components/common/Icons';
+import { MapPinIcon, EyeIcon, ShieldCheckIcon, UsersIcon } from '../components/common/Icons';
 
 /**
  * JalDrishti Authenticated Top Header (REM-06 / DEC-19)
@@ -19,6 +19,7 @@ export default function Header({ onToggleSidebar }) {
   const { user, logout } = useAuth();
   const { unreadCount, recentAlerts } = useAlertContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentTime, setCurrentTime] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -142,8 +143,23 @@ export default function Header({ onToggleSidebar }) {
         </form>
       </div>
 
-      {/* Right: Station Selector, Notifications, Date/Live Pill, User Avatar */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      {/* Right: Admin Portal Shortcut, Station Selector, Notifications, Date/Live Pill, User Avatar */}
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
+        {/* Verified Admin-Only Top Bar Shortcut */}
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
+              location.pathname.startsWith('/admin')
+                ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                : 'bg-[#E5F6FF] text-[#0369A1] border-[#7DD3FC] hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7]'
+            }`}
+          >
+            <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0" />
+            <span>Admin Portal</span>
+          </Link>
+        )}
+
         {/* Station Selector Dropdown */}
         <div className="relative hidden lg:block" ref={stationRef}>
           <button
@@ -276,7 +292,7 @@ export default function Header({ onToggleSidebar }) {
             {/* User Name & Role Badge (Desktop) */}
             <div className="hidden md:flex flex-col text-left leading-tight">
               <span className="text-xs font-bold text-[#1E293B]">
-                {user?.name || (isAdmin ? 'Anikesh Jain' : 'Akshat Jain')}
+                {user?.name || 'User'}
               </span>
               <span className="text-[10px] font-medium text-[#475569]">
                 {isAdmin ? 'Administrator' : 'Citizen'}
@@ -296,11 +312,33 @@ export default function Header({ onToggleSidebar }) {
                 <p className="text-[11px] text-[#475569] truncate">{user?.email || ''}</p>
                 <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#E5F6FF] text-[#0284C7] border border-[#BAE6FD]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />
-                  <span>Role: {user?.role || 'Citizen'}</span>
+                  <span>Role: {isAdmin ? 'Administrator' : 'Citizen'}</span>
                 </div>
               </div>
 
-              {/* Links */}
+              {/* Admin-Only Portal Entries */}
+              {isAdmin && (
+                <div className="py-1 border-b border-slate-100">
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#0369A1] bg-[#F0FAFF]/80 hover:bg-[#E0F2FE] transition-colors"
+                  >
+                    <ShieldCheckIcon className="w-4 h-4 text-[#0284C7]" />
+                    <span>Admin Portal</span>
+                  </Link>
+                  <Link
+                    to="/admin/users"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <UsersIcon className="w-4 h-4 text-slate-400" />
+                    <span>User Management</span>
+                  </Link>
+                </div>
+              )}
+
+              {/* Standard Account & Dashboard Links */}
               <div className="py-1">
                 <Link
                   to="/profile"
@@ -325,20 +363,14 @@ export default function Header({ onToggleSidebar }) {
                   <span>Settings & Thresholds</span>
                 </Link>
 
-                {isAdmin ? (
-                  <Link
-                    to="/citizen"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-cyan-700 hover:bg-cyan-50 font-medium transition-colors"
-                  >
-                    <EyeIcon className="w-4 h-4 text-cyan-600" />
-                    <span>View Citizen Dashboard</span>
-                  </Link>
-                ) : (
-                  <div className="px-4 py-1.5 text-[10px] text-slate-400">
-                    Administrator access requires an Admin account.
-                  </div>
-                )}
+                <Link
+                  to="/citizen"
+                  onClick={() => setIsProfileOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs text-cyan-700 hover:bg-cyan-50 font-medium transition-colors"
+                >
+                  <EyeIcon className="w-4 h-4 text-cyan-600" />
+                  <span>{isAdmin ? 'View Citizen Dashboard' : 'Citizen Dashboard'}</span>
+                </Link>
               </div>
 
               {/* Logout */}

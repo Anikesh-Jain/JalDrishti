@@ -364,7 +364,7 @@ export default function AdminUsersPage() {
                                 day: 'numeric',
                                 year: 'numeric'
                               })
-                            : 'Oct 9, 2026'}
+                            : 'Never'}
                         </td>
 
                         {/* Actions */}

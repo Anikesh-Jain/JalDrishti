@@ -44,25 +44,26 @@ export default function AdminDashboardPage() {
     thresholds: [],
     nodes: DEMO_STATIONS,
     notificationsConfig: null,
-    inquiries: []
+    inquiries: [],
+    usersCount: null
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [ackingId, setAckingId] = useState(null);
-  const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
   const [isDemo, setIsDemo] = useState(true);
 
   const loadAdminTelemetry = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [health, alertsRes, threshRes, nodesRes, notifRes, inquiriesRes] = await Promise.all([
+      const [health, alertsRes, threshRes, nodesRes, notifRes, inquiriesRes, usersRes] = await Promise.all([
         api.admin.getHealth().catch(() => ({ status: 'ok', database: 'connected' })),
         api.alerts.getActive().catch(() => ({ data: [] })),
         api.thresholds.getAll().catch(() => ({ data: [] })),
         api.sensor.getNodes().catch(() => ({ data: [] })),
         api.notifications.getConfig().catch(() => ({ data: null })),
-        api.contact.getInquiries().catch(() => ({ inquiries: [] }))
+        api.contact.getInquiries().catch(() => ({ inquiries: [] })),
+        api.users.getAll().catch(() => ({ count: null, data: [] }))
       ]);
 
       const realNodes = nodesRes?.data && Array.isArray(nodesRes.data) && nodesRes.data.length > 0
@@ -76,13 +77,21 @@ export default function AdminDashboardPage() {
       const usingDemo = !nodesRes?.data?.length || !alertsRes?.data?.length;
       setIsDemo(usingDemo);
 
+      const resolvedUsersCount =
+        typeof usersRes?.count === 'number'
+          ? usersRes.count
+          : Array.isArray(usersRes?.data)
+            ? usersRes.data.length
+            : null;
+
       setData({
         health: health || DEMO_ADMIN_HEALTH,
         activeAlerts: realAlerts,
         thresholds: threshRes?.data || [],
         nodes: realNodes,
         notificationsConfig: notifRes?.data || notifRes || { provider: 'Mock Gateway', smsEnabled: true },
-        inquiries: inquiriesRes?.inquiries || []
+        inquiries: inquiriesRes?.inquiries || [],
+        usersCount: resolvedUsersCount
       });
     } catch (err) {
       setData({
@@ -91,7 +100,8 @@ export default function AdminDashboardPage() {
         thresholds: [],
         nodes: DEMO_STATIONS,
         notificationsConfig: { provider: 'Mock Gateway', smsEnabled: true },
-        inquiries: []
+        inquiries: [],
+        usersCount: null
       });
       setIsDemo(true);
     } finally {
@@ -119,18 +129,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleUpdateInquiryStatus = async (inquiryId, newStatus) => {
-    try {
-      setUpdatingInquiryId(inquiryId);
-      await api.contact.updateStatus(inquiryId, { status: newStatus });
-      await loadAdminTelemetry();
-    } catch (err) {
-      alert(`Failed to update inquiry status: ${err.message}`);
-    } finally {
-      setUpdatingInquiryId(null);
-    }
-  };
-
   const isHealthy = data.health?.database === 'connected' || data.health?.status === 'ok';
 
   return (
@@ -143,13 +141,14 @@ export default function AdminDashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-              <Badge variant="safe" size="sm">Admin Control Plane</Badge>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
+              <Badge variant="safe" size="sm">Administrator</Badge>
               {isDemo && <DemoBadge text="Simulated Dataset" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Operational supervision, threshold limits, alert acknowledgment, and system health
+              Operational supervision, user RBAC, threshold limits, alert acknowledgment, and system health
+              {user?.email ? ` · Signed in as ${user.email}` : ''}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -334,7 +333,14 @@ export default function AdminDashboardPage() {
               to="/admin/users"
               className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-cyan-400 hover:shadow-sm transition-all group"
             >
-              <UsersIcon className="w-6 h-6 text-cyan-600 mb-2" />
+              <div className="flex items-center justify-between mb-2">
+                <UsersIcon className="w-6 h-6 text-cyan-600" />
+                {typeof data.usersCount === 'number' && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    {data.usersCount} {data.usersCount === 1 ? 'account' : 'accounts'}
+                  </span>
+                )}
+              </div>
               <h4 className="text-sm font-bold text-slate-900 group-hover:text-cyan-700">User Accounts & RBAC</h4>
               <p className="text-xs text-slate-500 mt-1">Manage system accounts, administrator privileges, and citizen roles.</p>
             </Link>

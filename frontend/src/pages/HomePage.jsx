@@ -276,23 +276,46 @@ export default function HomePage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link
-                  to={isAuthenticated ? dashboardPath : '/citizen'}
-                  className="px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-[#0284C7] hover:bg-[#0369A1] shadow-lg shadow-black/25 hover:shadow-black/35 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
-                >
-                  <span>Explore Citizen Portal</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </Link>
+                {isAuthenticated && user?.role === 'Admin' ? (
+                  <>
+                    <Link
+                      to="/admin"
+                      className="px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-[#0284C7] hover:bg-[#0369A1] shadow-lg shadow-black/25 hover:shadow-black/35 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+                    >
+                      <ShieldCheckIcon className="w-4 h-4" />
+                      <span>Open Admin Portal</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
+                    <Link
+                      to="/citizen"
+                      className="px-6 py-3.5 rounded-xl font-semibold text-sm text-white hover:text-white bg-white/20 hover:bg-white/30 border border-white/35 backdrop-blur-md transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    >
+                      <span>Citizen Dashboard</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={isAuthenticated ? dashboardPath : '/citizen'}
+                      className="px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-[#0284C7] hover:bg-[#0369A1] shadow-lg shadow-black/25 hover:shadow-black/35 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+                    >
+                      <span>Explore Citizen Portal</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
 
-                <a
-                  href="#overview"
-                  className="px-6 py-3.5 rounded-xl font-semibold text-sm text-white hover:text-white bg-white/20 hover:bg-white/30 border border-white/35 backdrop-blur-md transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  <span>Project Overview</span>
-                  <span>↓</span>
-                </a>
+                    <a
+                      href="#overview"
+                      className="px-6 py-3.5 rounded-xl font-semibold text-sm text-white hover:text-white bg-white/20 hover:bg-white/30 border border-white/35 backdrop-blur-md transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    >
+                      <span>Project Overview</span>
+                      <span>↓</span>
+                    </a>
+                  </>
+                )}
               </div>
             </div>
 

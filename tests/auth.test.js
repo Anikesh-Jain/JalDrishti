@@ -6,6 +6,7 @@
 
 const crypto = require('crypto');
 const { TestContext, models, env, bcrypt, jwt } = require('./testContext');
+const googleAuthService = require('../backend/src/services/googleAuthService');
 
 async function runAuthSuite() {
   const ctx = new TestContext('Authentication');
@@ -325,6 +326,144 @@ async function runAuthSuite() {
       newLoginRes.body?.token,
       '1.22 Reset token reuse rejected, old password invalidated, new credentials authenticated'
     );
+
+    // 1.23 - 1.26 Server-side Google OAuth Admin Recognition & RBAC Enforcement
+    const originalVerifyGoogle = googleAuthService.verifyGoogleIdToken;
+    const originalAdminEmailEnv = process.env.ADMIN_EMAIL;
+    const designatedAdminTestEmail = `primary_admin_${suffix}@gmail.com`;
+    const normalGoogleCitizenEmail = `normal_citizen_${suffix}@gmail.com`;
+
+    try {
+      process.env.ADMIN_EMAIL = designatedAdminTestEmail;
+
+      // Stub cryptographic verification to simulate verified Google ID tokens
+      googleAuthService.verifyGoogleIdToken = async (token) => {
+        if (token === 'mock_verified_admin_google_token') {
+          return {
+            googleId: `gid_admin_${suffix}`,
+            email: designatedAdminTestEmail,
+            name: 'Designated Google Admin',
+            picture: 'https://example.com/admin.png',
+            emailVerified: true
+          };
+        }
+        if (token === 'mock_verified_citizen_google_token') {
+          return {
+            googleId: `gid_citizen_${suffix}`,
+            email: normalGoogleCitizenEmail,
+            name: 'Normal Google Citizen',
+            picture: 'https://example.com/citizen.png',
+            emailVerified: true
+          };
+        }
+        if (token === 'mock_unverified_admin_google_token') {
+          return {
+            googleId: `gid_unverified_${suffix}`,
+            email: designatedAdminTestEmail,
+            name: 'Unverified Email Attempt',
+            picture: null,
+            emailVerified: false
+          };
+        }
+        throw new Error('Invalid Google ID token');
+      };
+
+      // 1.23 Unverified Google email matching ADMIN_EMAIL is strictly rejected
+      const unverifiedRes = await ctx.makeRequest({
+        path: '/api/auth/google',
+        method: 'POST'
+      }, { credential: 'mock_unverified_admin_google_token' });
+      ctx.assert(
+        unverifiedRes.statusCode === 401,
+        '1.23 Google Auth rejects unverified email_verified:false token even if email matches ADMIN_EMAIL'
+      );
+
+      // 1.24 Existing Citizen record matching ADMIN_EMAIL is automatically promoted to Admin on verified Google login
+      const preExistingAdmin = await models.User.create({
+        name: 'Pre-existing Google User',
+        email: designatedAdminTestEmail,
+        googleId: `gid_admin_${suffix}`,
+        role: 'Citizen',
+        passwordHash: null
+      });
+
+      const googleAdminRes = await ctx.makeRequest({
+        path: '/api/auth/google',
+        method: 'POST'
+      }, { credential: 'mock_verified_admin_google_token' });
+
+      const adminTestCheck = googleAdminRes.body?.token
+        ? await ctx.makeRequest({
+            path: '/api/auth/admin-test',
+            headers: { Authorization: `Bearer ${googleAdminRes.body.token}` }
+          })
+        : { statusCode: 0 };
+
+      const adminUsersCheck = googleAdminRes.body?.token
+        ? await ctx.makeRequest({
+            path: '/api/users',
+            headers: { Authorization: `Bearer ${googleAdminRes.body.token}` }
+          })
+        : { statusCode: 0 };
+
+      ctx.assert(
+        preExistingAdmin &&
+        googleAdminRes.statusCode === 200 &&
+        googleAdminRes.body?.user?.role === 'Admin' &&
+        adminTestCheck.statusCode === 200 &&
+        adminUsersCheck.statusCode === 200,
+        '1.24 Verified Google account matching ADMIN_EMAIL is recognized as Admin and authorized for admin APIs'
+      );
+
+      // 1.25 Normal Google account strictly receives Citizen role even if frontend injects role:"Admin"
+      const googleCitizenRes = await ctx.makeRequest({
+        path: '/api/auth/google',
+        method: 'POST'
+      }, {
+        credential: 'mock_verified_citizen_google_token',
+        role: 'Admin' // Frontend tampering attempt must be ignored
+      });
+
+      const citizenBlockedAdminTest = googleCitizenRes.body?.token
+        ? await ctx.makeRequest({
+            path: '/api/auth/admin-test',
+            headers: { Authorization: `Bearer ${googleCitizenRes.body.token}` }
+          })
+        : { statusCode: 0 };
+
+      const citizenBlockedUsers = googleCitizenRes.body?.token
+        ? await ctx.makeRequest({
+            path: '/api/users',
+            headers: { Authorization: `Bearer ${googleCitizenRes.body.token}` }
+          })
+        : { statusCode: 0 };
+
+      ctx.assert(
+        googleCitizenRes.statusCode === 200 &&
+        googleCitizenRes.body?.user?.role === 'Citizen' &&
+        citizenBlockedAdminTest.statusCode === 403 &&
+        citizenBlockedUsers.statusCode === 403,
+        '1.25 Normal Google account receives Citizen role (ignores frontend role tampering) and gets HTTP 403 on admin APIs'
+      );
+
+      // 1.26 Existing session GET /api/auth/me synchronizes Admin role for Google-linked ADMIN_EMAIL
+      await models.User.updateOne({ email: designatedAdminTestEmail }, { $set: { role: 'Citizen' } });
+      const meSyncRes = await ctx.makeRequest({
+        path: '/api/auth/me',
+        headers: { Authorization: `Bearer ${googleAdminRes.body.token}` }
+      });
+      ctx.assert(
+        meSyncRes.statusCode === 200 && meSyncRes.body?.user?.role === 'Admin',
+        '1.26 GET /api/auth/me automatically synchronizes Admin role for Google-verified ADMIN_EMAIL sessions'
+      );
+    } finally {
+      googleAuthService.verifyGoogleIdToken = originalVerifyGoogle;
+      if (originalAdminEmailEnv === undefined) {
+        delete process.env.ADMIN_EMAIL;
+      } else {
+        process.env.ADMIN_EMAIL = originalAdminEmailEnv;
+      }
+    }
 
   } finally {
     // Cleanup

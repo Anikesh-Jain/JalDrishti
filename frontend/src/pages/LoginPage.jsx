@@ -26,7 +26,29 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Return to requested protected route if redirected, else role destination
-  const from = location.state?.from?.pathname || '/';
+  const searchParams = new URLSearchParams(location.search);
+  const redirectQuery = searchParams.get('redirect');
+  const from = location.state?.from?.pathname || redirectQuery || '/';
+
+  const resolveDestination = React.useCallback((role) => {
+    const isAdminRole = role === 'Admin';
+    const isValidFrom =
+      typeof from === 'string' &&
+      from.startsWith('/') &&
+      !from.startsWith('//') &&
+      from !== '/' &&
+      from !== '/login' &&
+      from !== '/register';
+
+    if (isValidFrom) {
+      const isAdminOnlyPath = from.startsWith('/admin') || from === '/users';
+      if (!isAdminOnlyPath || isAdminRole) {
+        return from;
+      }
+    }
+
+    return isAdminRole ? '/admin' : '/citizen';
+  }, [from]);
 
   const validate = () => {
     const errors = {};
@@ -75,10 +97,7 @@ export default function LoginPage() {
         email: email.trim(),
         password
       });
-      const dest = (from && from !== '/' && from !== '/login') 
-        ? from 
-        : (res?.user?.role === 'Admin' ? '/admin' : '/citizen');
-      navigate(dest, { replace: true });
+      navigate(resolveDestination(res?.user?.role), { replace: true });
     } catch (err) {
       setServerError(formatAuthError(err, 'Invalid email or password.'));
     } finally {
@@ -91,16 +110,13 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const res = await googleLogin(credential);
-      const dest = (from && from !== '/' && from !== '/login') 
-        ? from 
-        : (res?.user?.role === 'Admin' ? '/admin' : '/citizen');
-      navigate(dest, { replace: true });
+      navigate(resolveDestination(res?.user?.role), { replace: true });
     } catch (err) {
       setServerError(formatAuthError(err, 'Google authentication failed.'));
     } finally {
       setIsSubmitting(false);
     }
-  }, [googleLogin, from, navigate]);
+  }, [googleLogin, resolveDestination, navigate]);
 
   const handleGoogleError = React.useCallback((err) => {
     setServerError(formatAuthError(err, 'Google Sign-In failed.'));

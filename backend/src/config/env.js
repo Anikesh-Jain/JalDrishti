@@ -12,6 +12,7 @@ const env = {
   JWT_SECRET: process.env.JWT_SECRET || 'jaldrishti_default_dev_secret_key_2026',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '24h',
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+  ADMIN_EMAIL: (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
   RATE_LIMIT_AUTH_WINDOW_MS: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, 10) || 15 * 60 * 1000,
   RATE_LIMIT_AUTH_MAX: parseInt(process.env.RATE_LIMIT_AUTH_MAX, 10) || 20,
   RATE_LIMIT_API_WINDOW_MS: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS, 10) || 15 * 60 * 1000,

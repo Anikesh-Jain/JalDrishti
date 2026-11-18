@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Logo, { BrandLogoLink } from '../components/common/Logo';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import { ShieldCheckIcon } from '../components/common/Icons';
 import Footer from './Footer';
 
 /**
@@ -62,13 +63,22 @@ export default function AppLayout({ children }) {
                     variant={user.role === 'Admin' ? 'safe' : 'info'}
                     size="sm"
                   >
-                    {user.role || 'Citizen'}
+                    {user.role === 'Admin' ? 'Admin' : 'Citizen'}
                   </Badge>
-                  <Link to={user.role === 'Admin' ? '/admin' : '/citizen'}>
-                    <Button variant="primary" size="sm" className="text-xs bg-gradient-to-r from-[#0EA5E9] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369A1] text-white shadow-xs font-semibold">
-                      Dashboard →
-                    </Button>
-                  </Link>
+                  {user.role === 'Admin' ? (
+                    <Link to="/admin">
+                      <Button variant="primary" size="sm" className="text-xs bg-gradient-to-r from-[#0284C7] to-[#0369A1] hover:from-[#0369A1] hover:to-[#075985] text-white shadow-xs font-semibold inline-flex items-center gap-1.5">
+                        <ShieldCheckIcon className="w-3.5 h-3.5" />
+                        <span>Admin Portal</span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/citizen">
+                      <Button variant="primary" size="sm" className="text-xs bg-gradient-to-r from-[#0EA5E9] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369A1] text-white shadow-xs font-semibold">
+                        Dashboard →
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -125,6 +135,25 @@ export default function AppLayout({ children }) {
                 {link.name}
               </a>
             ))}
+            {isAuthenticated && user?.role === 'Admin' && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-[#0369A1] bg-[#E5F6FF] hover:bg-[#BAE6FD]/60 transition-colors"
+              >
+                <ShieldCheckIcon className="w-4 h-4 text-[#0284C7]" />
+                <span>Admin Portal</span>
+              </Link>
+            )}
+            {isAuthenticated && (
+              <Link
+                to="/citizen"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#334155] hover:bg-[#F0FAFF] hover:text-[#0284C7] transition-colors"
+              >
+                Citizen Dashboard
+              </Link>
+            )}
             {isAuthenticated && (
               <button
                 type="button"

@@ -5,6 +5,7 @@ import AdminLayout from '../../layouts/AdminLayout';
 import CitizenLayout from '../../layouts/CitizenLayout';
 import Button from '../../components/common/Button';
 import LoadingState from '../../components/feedback/LoadingState';
+import ErrorState from '../../components/feedback/ErrorState';
 import useAdminSettings from '../../hooks/useAdminSettings';
 import { ThresholdSettings, NotificationSettings } from '../../components/admin/settings';
 import ContactInquiryManagement from '../../components/admin/ContactInquiryManagement';

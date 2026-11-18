@@ -19,17 +19,64 @@ export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const isAdmin = user?.role === 'Admin';
 
-  // Navigation items matching reference UI sidebar exactly
+  // Admin-only navigation items (strictly hidden for Citizens)
+  const adminNavItems = isAdmin
+    ? [
+        {
+          name: 'Admin Portal',
+          path: '/admin',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          ),
+          matchPaths: ['/admin']
+        },
+        {
+          name: 'User Management',
+          path: '/admin/users',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ),
+          matchPaths: ['/admin/users', '/users']
+        },
+        {
+          name: 'Contact Inquiries',
+          path: '/admin#inquiries',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          ),
+          matchPaths: ['/admin#inquiries']
+        },
+        {
+          name: 'System Settings',
+          path: '/admin/settings',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          ),
+          matchPaths: ['/admin/settings']
+        }
+      ]
+    : [];
+
+  // Monitoring & citizen navigation items
   const navItems = [
     {
-      name: 'Dashboard',
-      path: isAdmin ? '/admin' : '/citizen',
+      name: isAdmin ? 'Citizen Dashboard' : 'Dashboard',
+      path: '/citizen',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
       ),
-      matchPaths: ['/citizen', '/admin']
+      matchPaths: ['/citizen']
     },
     {
       name: 'Water Quality',
@@ -97,41 +144,21 @@ export default function Sidebar({ isOpen, onClose }) {
       ),
       matchPaths: ['/devices']
     },
-    ...(isAdmin
+    ...(!isAdmin
       ? [
           {
-            name: 'Users',
-            path: '/admin/users',
+            name: 'Settings',
+            path: '/settings',
             icon: (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             ),
-            matchPaths: ['/admin/users']
-          },
-          {
-            name: 'Inquiries',
-            path: '/admin#inquiries',
-            icon: (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            ),
-            matchPaths: ['/admin#inquiries']
+            matchPaths: ['/settings']
           }
         ]
-      : []),
-    {
-      name: 'Settings',
-      path: isAdmin ? '/admin/settings' : '/settings',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      matchPaths: ['/settings', '/admin/settings']
-    }
+      : [])
   ];
 
   const isCurrentActive = (item) => {
@@ -141,6 +168,38 @@ export default function Sidebar({ isOpen, onClose }) {
       if (p === '/citizen') return location.pathname === '/citizen';
       return location.pathname.startsWith(p);
     });
+  };
+
+  const renderNavLink = (item) => {
+    const active = isCurrentActive(item);
+    return (
+      <NavLink
+        key={item.name}
+        to={item.path}
+        onClick={onClose}
+        className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          active
+            ? 'bg-[#0284C7] text-white shadow-md shadow-[#0284C7]/20 font-semibold'
+            : 'text-[#475569] hover:text-[#0284C7] hover:bg-white/70'
+        }`}
+      >
+        <div className="flex items-center gap-3.5">
+          <span className={`${active ? 'text-white' : 'text-[#0284C7] group-hover:text-[#0284C7]'}`}>
+            {item.icon}
+          </span>
+          <span>{item.name}</span>
+        </div>
+        {Boolean(item.badge && item.badge > 0) && (
+          <span
+            className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white rounded-full ${
+              item.badgeColor || 'bg-rose-500'
+            }`}
+          >
+            {item.badge}
+          </span>
+        )}
+      </NavLink>
+    );
   };
 
   return (
@@ -177,38 +236,28 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Navigation List */}
-        <nav className="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto water-scrollbar">
-          {navItems.map((item) => {
-            const active = isCurrentActive(item);
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={onClose}
-                className={`group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-[#0284C7] text-white shadow-md shadow-[#0284C7]/20 font-semibold'
-                    : 'text-[#475569] hover:text-[#0284C7] hover:bg-white/70'
-                }`}
-              >
-                <div className="flex items-center gap-3.5">
-                  <span className={`${active ? 'text-white' : 'text-[#0284C7] group-hover:text-[#0284C7]'}`}>
-                    {item.icon}
-                  </span>
-                  <span>{item.name}</span>
-                </div>
-                {Boolean(item.badge && item.badge > 0) && (
-                  <span
-                    className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white rounded-full ${
-                      item.badgeColor || 'bg-rose-500'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </NavLink>
-            );
-          })}
+        <nav className="flex-1 py-5 px-3 space-y-5 overflow-y-auto water-scrollbar">
+          {isAdmin && adminNavItems.length > 0 && (
+            <div className="space-y-1">
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-wider text-[#0369A1]">
+                Admin Portal
+              </p>
+              <div className="space-y-1">
+                {adminNavItems.map(renderNavLink)}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {isAdmin && (
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                Monitoring
+              </p>
+            )}
+            <div className="space-y-1">
+              {navItems.map(renderNavLink)}
+            </div>
+          </div>
         </nav>
 
         {/* Bottom User Role Status Pill */}

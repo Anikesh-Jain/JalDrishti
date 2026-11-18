@@ -83,6 +83,8 @@ async function runFrontendSuite() {
         (env.JWT_SECRET && code.includes(env.JWT_SECRET)) ||
         code.includes('mongodb://') ||
         code.includes('process.env.JWT_SECRET') ||
+        code.includes('process.env.ADMIN_EMAIL') ||
+        code.includes('VITE_ADMIN_EMAIL') ||
         (env.GEMINI_API_KEY && code.includes(env.GEMINI_API_KEY))
       ) {
         bundleClean = false;
@@ -92,7 +94,23 @@ async function runFrontendSuite() {
   }
   ctx.assert(
     bundleClean,
-    '15.5 Production frontend bundle strictly free of backend secrets'
+    '15.5 Production frontend bundle strictly free of backend secrets and admin env configs'
+  );
+
+  // 15.6 Integrated Admin Portal navigation gated by server-verified Admin role
+  const headerCode = fs.readFileSync(path.join(frontendDir, 'src/layouts/Header.jsx'), 'utf8');
+  const sidebarCode = fs.readFileSync(path.join(frontendDir, 'src/layouts/Sidebar.jsx'), 'utf8');
+  const appLayoutCode = fs.readFileSync(path.join(frontendDir, 'src/layouts/AppLayout.jsx'), 'utf8');
+  const hasAdminPortalNav =
+    headerCode.includes('Admin Portal') &&
+    headerCode.includes('isAdmin') &&
+    sidebarCode.includes('Admin Portal') &&
+    sidebarCode.includes('isAdmin') &&
+    appLayoutCode.includes('Admin Portal') &&
+    appLayoutCode.includes("user.role === 'Admin'");
+  ctx.assert(
+    hasAdminPortalNav,
+    '15.6 Integrated Admin Portal entry present in Header, Sidebar, and AppLayout and strictly gated by Admin role'
   );
 
   return { suite: ctx.suiteName, passed: ctx.passed, failed: ctx.failed };
