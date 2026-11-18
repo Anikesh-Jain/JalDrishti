@@ -32,7 +32,7 @@ export default function DemoBadge({
             </span>
           </div>
         </div>
-        <span className="self-start sm:self-auto px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-200/80 text-amber-900 border border-amber-300 shrink-0">
+        <span className="self-start sm:self-auto px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-200/80 text-amber-900 border border-amber-300 shrink-0">
           Simulated
         </span>
       </div>
@@ -60,7 +60,7 @@ export default function DemoBadge({
   return (
     <span
       title="This metric represents simulated demo data benchmarked to BIS IS 10500 reference standards"
-      className={`inline-flex items-center gap-1.5 rounded font-mono font-semibold uppercase tracking-wider bg-amber-100/90 text-amber-900 border border-amber-300/80 ${sizeClasses} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded font-medium uppercase tracking-wider bg-amber-100/90 text-amber-900 border border-amber-300/80 ${sizeClasses} ${className}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden="true" />
       <span>{displayText}</span>

@@ -193,8 +193,8 @@ export default function CitizenMapPage() {
                     <p className="text-[11px] text-slate-500 leading-tight">{n.location?.address || 'Indore Station'}</p>
                   </div>
                   <div className="pt-2 border-t border-slate-200/60">
-                    <div className="text-[10px] text-slate-500 font-mono">
-                      Coords: {n.location?.latitude?.toFixed(4)}, {n.location?.longitude?.toFixed(4)}
+                    <div className="text-[10px] text-slate-500">
+                      Coords: <span className="font-mono">{n.location?.latitude?.toFixed(4)}, {n.location?.longitude?.toFixed(4)}</span>
                     </div>
                     <div className="flex items-center justify-between mt-1 text-[11px]">
                       <span className="text-slate-600 font-medium">Turbidity:</span>

@@ -210,7 +210,7 @@ export default function NotificationSettings({
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-500">Current Persisted:</span>
-                <span className="text-xs font-mono font-bold bg-white px-2.5 py-1 rounded border border-slate-200 text-slate-800">
+                <span className="text-xs font-semibold bg-white px-2.5 py-1 rounded border border-slate-200 text-slate-800">
                   {config?.recipientMasked || 'No recipient configured'}
                 </span>
               </div>

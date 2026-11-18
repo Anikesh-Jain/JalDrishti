@@ -77,7 +77,7 @@ export default function SensorNodeMarker({
                 {node.location.address || 'Monitoring Location'}
               </p>
               {node.nodeId && (
-                <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
                   {node.nodeId}
                 </span>
               )}

@@ -20,9 +20,10 @@
     --text-heading: #1E293B;
   }
 
+  html,
   body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 400;
     line-height: 1.5;
     font-size-adjust: from-font;
@@ -32,8 +33,17 @@
     color: #334155;
   }
 
+  button,
+  input,
+  select,
+  textarea,
+  option,
+  optgroup {
+    font-family: 'Inter', sans-serif;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     line-height: 1.25;
     letter-spacing: -0.015em;
@@ -61,22 +71,31 @@
   kbd,
   samp,
   .font-mono {
-    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size-adjust: ch-width from-font;
     font-variant-numeric: tabular-nums;
   }
 }
 
-/* Consistent Chart Typography (IBM Plex Mono for ticks/telemetry, Inter for legends/labels) */
-.recharts-text,
-.recharts-cartesian-axis-tick-value {
-  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-variant-numeric: tabular-nums;
+/* Third-Party Overrides: Leaflet & Recharts Typography Consistency */
+.leaflet-container,
+.leaflet-popup-content,
+.leaflet-control,
+.leaflet-tooltip {
+  font-family: 'Inter', sans-serif !important;
 }
 
+.recharts-wrapper,
+.recharts-text,
+.recharts-label,
 .recharts-legend-item-text,
-.recharts-label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.recharts-tooltip-wrapper {
+  font-family: 'Inter', sans-serif;
+}
+
+.recharts-cartesian-axis-tick-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {

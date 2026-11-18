@@ -145,7 +145,7 @@ export default function CitizenAlertsPage() {
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`text-[11px] font-mono ${activeTab === tab.label ? 'text-white font-semibold' : tab.color}`}>
+              <span className={`text-[11px] ${activeTab === tab.label ? 'text-white font-semibold' : tab.color}`}>
                 ({counts[tab.label] || 0})
               </span>
             </button>

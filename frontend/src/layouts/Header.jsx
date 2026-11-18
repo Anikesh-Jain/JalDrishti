@@ -259,7 +259,7 @@ export default function Header({ onToggleSidebar }) {
                           <p className="text-[11px] text-slate-500 mt-0.5">
                             Measured value: <span className="font-mono font-medium text-slate-700">{a.value}</span> (Limit: <span className="font-mono">{a.thresholdLimit}</span>)
                           </p>
-                          <span className="text-[10px] font-mono text-slate-400 mt-1 block">
+                          <span className="text-[10px] text-slate-400 mt-1 block">
                             Station: {a.nodeId}
                           </span>
                         </div>

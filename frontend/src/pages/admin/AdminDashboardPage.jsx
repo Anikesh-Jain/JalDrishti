@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
               <AlertTriangleIcon className="w-5 h-5 text-amber-500" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">{data.activeAlerts.length}</span>
+              <span className="text-3xl font-bold tabular-nums text-slate-900">{data.activeAlerts.length}</span>
               <p className="text-[11px] font-medium mt-1">
                 {data.activeAlerts.length === 0 ? (
                   <span className="text-emerald-600">Zero active breaches</span>
@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
               <ShieldCheckIcon className="w-5 h-5 text-emerald-500" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">
+              <span className="text-3xl font-bold tabular-nums text-slate-900">
                 {isHealthy ? '100%' : 'Degraded'}
               </span>
               <p className="text-[11px] font-medium text-emerald-600 mt-1">
@@ -211,7 +211,7 @@ export default function AdminDashboardPage() {
               <MapPinIcon className="w-5 h-5 text-cyan-600" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">
+              <span className="text-3xl font-bold tabular-nums text-slate-900">
                 {data.nodes.length}
               </span>
               <p className="text-[11px] font-medium text-slate-500 mt-1">
@@ -266,8 +266,9 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-slate-600 mt-0.5">
                         Measured Value: <strong className="font-mono font-semibold text-slate-900">{alert.value}</strong> • Limit Bound: <strong className="font-mono font-semibold text-slate-900">{alert.thresholdLimit}</strong>
                       </p>
-                      <span className="text-[10px] font-mono text-slate-400 mt-1 block">
-                        Station: {alert.nodeId} • First breached: {new Date(alert.timestamp).toLocaleString()}
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        Station: {alert.nodeId} • First breached:{' '}
+                        <span className="font-mono">{new Date(alert.timestamp).toLocaleString()}</span>
                       </span>
                     </div>
                   </div>
@@ -336,7 +337,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between mb-2">
                 <UsersIcon className="w-6 h-6 text-cyan-600" />
                 {typeof data.usersCount === 'number' && (
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     {data.usersCount} {data.usersCount === 1 ? 'account' : 'accounts'}
                   </span>
                 )}

@@ -96,9 +96,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        heading: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        sans: ['Inter', 'sans-serif'],
+        heading: ['Inter', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
       },
 
       boxShadow: {

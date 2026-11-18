@@ -110,9 +110,9 @@ export default function LatestReadingCard({
             Station Identifier (Technical)
           </span>
           <div className="flex items-center gap-2">
-            <code className="font-mono text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-xs font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
               {technicalId}
-            </code>
+            </span>
             <span className="text-[11px] text-slate-400">IoT Sensor Node</span>
           </div>
         </div>

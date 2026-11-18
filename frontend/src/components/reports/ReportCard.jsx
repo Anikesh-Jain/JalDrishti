@@ -224,7 +224,7 @@ export default function ReportCard({
                         <td className="px-3 py-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
                           {formatTime(row.timestamp)}
                         </td>
-                        <td className="px-3 py-2 font-mono font-medium text-slate-900 whitespace-nowrap">
+                        <td className="px-3 py-2 font-medium text-slate-900 whitespace-nowrap">
                           {row.nodeId}
                         </td>
                         <td className="px-3 py-2 font-mono">
@@ -261,7 +261,7 @@ export default function ReportCard({
                       <td className="px-3 py-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
                         {formatTime(row.timestamp)}
                       </td>
-                      <td className="px-3 py-2 font-mono font-medium text-slate-900 whitespace-nowrap">
+                      <td className="px-3 py-2 font-medium text-slate-900 whitespace-nowrap">
                         {row.nodeId}
                       </td>
                       <td className="px-3 py-2 font-medium text-slate-900">
@@ -270,7 +270,7 @@ export default function ReportCard({
                       <td className="px-3 py-2 font-mono font-semibold text-rose-600">
                         {row.measuredValue !== undefined && row.measuredValue !== '' ? row.measuredValue : row.value}
                       </td>
-                      <td className="px-3 py-2 font-mono text-[11px]">
+                      <td className="px-3 py-2 text-[11px] font-medium">
                         {row.direction}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">

@@ -111,7 +111,7 @@ export default function LiveParameterCard({
             {displayValue}
           </span>
           {unit && (
-            <span className="text-xs font-medium font-mono text-slate-500">
+            <span className="text-xs font-medium text-slate-500">
               {unit}
             </span>
           )}
@@ -123,7 +123,7 @@ export default function LiveParameterCard({
         {resolvedRangeText && (
           <div className="text-[11px] text-slate-500 font-medium flex items-center justify-between">
             <span className="text-slate-400">Normal Range:</span>
-            <span className="font-mono font-medium text-slate-700">{resolvedRangeText}</span>
+            <span className="font-medium text-slate-700">{resolvedRangeText}</span>
           </div>
         )}
 

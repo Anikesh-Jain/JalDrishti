@@ -292,7 +292,7 @@ export default function ContactInquiryManagement() {
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-medium ${
                     isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
                   }`}
                 >
@@ -326,7 +326,7 @@ export default function ContactInquiryManagement() {
               >
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                    <span className="text-xs font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                       {inquiry.referenceId || `INQ-${inquiry._id.substring(18).toUpperCase()}`}
                     </span>
                     <h4 className="text-xs font-bold text-slate-900 truncate max-w-md">
@@ -343,7 +343,7 @@ export default function ContactInquiryManagement() {
 
                   <p className="text-xs text-slate-600">
                     From: <strong className="text-slate-800">{inquiry.name}</strong> •{' '}
-                    <span className="font-mono text-slate-500">{inquiry.email}</span>
+                    <span className="text-slate-500">{inquiry.email}</span>
                   </p>
 
                   <p className="text-xs text-slate-700 line-clamp-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
@@ -403,7 +403,7 @@ export default function ContactInquiryManagement() {
             <div className="p-5 sm:p-6 border-b border-slate-200 bg-slate-50/70 flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
                     {selectedInquiry.referenceId || `INQ-${selectedInquiry._id.substring(18).toUpperCase()}`}
                   </span>
                   {getStatusBadge(selectedInquiry.status)}
@@ -523,7 +523,7 @@ export default function ContactInquiryManagement() {
                     Write Administrator Response
                   </h4>
                   <span className="text-[11px] text-slate-500">
-                    Destination: <strong className="font-mono text-slate-700">{selectedInquiry.email}</strong>
+                    Destination: <strong className="text-slate-700">{selectedInquiry.email}</strong>
                   </span>
                 </div>
 

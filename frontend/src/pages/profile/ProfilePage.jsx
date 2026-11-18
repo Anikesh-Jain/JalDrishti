@@ -393,7 +393,7 @@ export default function ProfilePage() {
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
               <div>
                 <span className="text-slate-500">Linked Device ID:</span>{' '}
-                <strong className="text-slate-900 font-mono">
+                <strong className="text-slate-900 font-semibold">
                   {user?.assignedNodeId || 'None (Unlinked)'}
                 </strong>
               </div>

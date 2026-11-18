@@ -393,7 +393,7 @@ export default function HomePage() {
                     <span className="truncate font-medium">
                       Node: {latestReading?.nodeName || latestReading?.nodeId || 'Bilawali Lake Intake'}
                     </span>
-                    <span className="shrink-0 text-[#0284C7] font-mono text-[11px] font-semibold">
+                    <span className="shrink-0 text-[#0284C7] text-[11px] font-medium">
                       {isDemo ? '● Simulated Stream' : '● Live IoT Stream'}
                     </span>
                   </div>
@@ -532,15 +532,15 @@ export default function HomePage() {
                 <div className="grid grid-cols-3 gap-2 pt-3 px-1 text-center">
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Sampling Rate</span>
-                    <span className="text-xs font-semibold text-[#0284C7] mt-0.5 block font-mono">30 Seconds</span>
+                    <span className="text-xs font-semibold text-[#0284C7] mt-0.5 block">30 Seconds</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Standard</span>
-                    <span className="text-xs font-semibold font-mono text-[#15803D] mt-0.5 block">BIS IS 10500</span>
+                    <span className="text-xs font-semibold text-[#15803D] mt-0.5 block">BIS IS 10500</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Telemetry</span>
-                    <span className="text-xs font-semibold font-mono text-[#0284C7] mt-0.5 block">Wi-Fi / REST</span>
+                    <span className="text-xs font-semibold text-[#0284C7] mt-0.5 block">Wi-Fi / REST</span>
                   </div>
                 </div>
               </div>
@@ -571,7 +571,7 @@ export default function HomePage() {
             <div className="p-6 rounded-2xl bg-[#F0FAFF] border border-[#BAE6FD] hover:border-[#38BDF8] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] flex items-center justify-center font-bold text-sm shadow-xs font-mono">
+                  <div className="w-11 h-11 rounded-xl bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] flex items-center justify-center font-semibold text-sm shadow-xs">
                     pH
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]">
@@ -598,7 +598,7 @@ export default function HomePage() {
 
               <div className="mt-5 pt-4 border-t border-[#BAE6FD]/70 flex items-baseline justify-between">
                 <span className="text-xs text-[#475569] font-medium">Safe Limit:</span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#DDF8E8] text-[#15803D] font-mono">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#DDF8E8] text-[#15803D]">
                   6.5 — 8.5 pH
                 </span>
               </div>
@@ -608,7 +608,7 @@ export default function HomePage() {
             <div className="p-6 rounded-2xl bg-[#F0FAFF] border border-[#BAE6FD] hover:border-[#38BDF8] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-bold text-sm shadow-xs font-mono">
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-semibold text-sm shadow-xs">
                     NTU
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]">
@@ -635,7 +635,7 @@ export default function HomePage() {
 
               <div className="mt-5 pt-4 border-t border-[#BAE6FD]/70 flex items-baseline justify-between">
                 <span className="text-xs text-[#475569] font-medium">Safe Limit:</span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#DDF8E8] text-[#15803D] font-mono">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#DDF8E8] text-[#15803D]">
                   ≤ 5.0 NTU
                 </span>
               </div>
@@ -645,7 +645,7 @@ export default function HomePage() {
             <div className="p-6 rounded-2xl bg-[#F0FAFF] border border-[#BAE6FD] hover:border-[#38BDF8] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] flex items-center justify-center font-bold text-sm shadow-xs font-mono">
+                  <div className="w-11 h-11 rounded-xl bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] flex items-center justify-center font-semibold text-sm shadow-xs">
                     TDS
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0]">
@@ -672,7 +672,7 @@ export default function HomePage() {
 
               <div className="mt-5 pt-4 border-t border-[#BAE6FD]/70 flex items-baseline justify-between">
                 <span className="text-xs text-[#475569] font-medium">Safe Limit:</span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#DDF8E8] text-[#15803D] font-mono">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#DDF8E8] text-[#15803D]">
                   ≤ 500 ppm
                 </span>
               </div>
@@ -682,7 +682,7 @@ export default function HomePage() {
             <div className="p-6 rounded-2xl bg-[#F0FAFF] border border-[#BAE6FD] hover:border-[#38BDF8] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center font-bold text-sm shadow-xs font-mono">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center font-semibold text-sm shadow-xs">
                     °C
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E0F7FF] text-[#0284C7] border border-[#BAE6FD]">
@@ -709,7 +709,7 @@ export default function HomePage() {
 
               <div className="mt-5 pt-4 border-t border-[#BAE6FD]/70 flex items-baseline justify-between">
                 <span className="text-xs text-[#475569] font-medium">Normal Range:</span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#E0F7FF] text-[#0284C7] font-mono">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E0F7FF] text-[#0284C7]">
                   10 — 40 °C
                 </span>
               </div>
@@ -768,7 +768,7 @@ export default function HomePage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[11px] font-bold text-[#0284C7] bg-white px-2 py-0.5 rounded border border-[#BAE6FD]">
+                      <span className="text-[11px] font-semibold text-[#0284C7] bg-white px-2 py-0.5 rounded border border-[#BAE6FD]">
                         {st.nodeId}
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -995,7 +995,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <span className="text-[10px] text-[#64748B] block">BIS Limit</span>
-                  <span className="font-mono font-bold text-[#15803D]">{currentParamConfig.safeBand}</span>
+                  <span className="font-semibold text-[#15803D]">{currentParamConfig.safeBand}</span>
                 </div>
               </div>
 
@@ -1199,7 +1199,7 @@ export default function HomePage() {
               </div>
               <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
                 <span>pH • Turbidity • TDS • Temp</span>
-                <span className="text-[#94A3B8] font-mono text-[10px]">01 →</span>
+                <span className="text-[#94A3B8] text-[10px] font-medium">01 →</span>
               </div>
             </div>
 
@@ -1221,7 +1221,7 @@ export default function HomePage() {
               </div>
               <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
                 <span>2.4 GHz Wi-Fi • Webhook</span>
-                <span className="text-[#94A3B8] font-mono text-[10px]">02 →</span>
+                <span className="text-[#94A3B8] text-[10px] font-medium">02 →</span>
               </div>
             </div>
 
@@ -1243,7 +1243,7 @@ export default function HomePage() {
               </div>
               <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#15803D] font-semibold">
                 <span>Threshold Engine • MongoDB</span>
-                <span className="text-[#94A3B8] font-mono text-[10px]">03 →</span>
+                <span className="text-[#94A3B8] text-[10px] font-medium">03 →</span>
               </div>
             </div>
 
@@ -1265,7 +1265,7 @@ export default function HomePage() {
               </div>
               <div className="mt-3.5 pt-2.5 border-t border-[#BAE6FD]/60 flex items-center justify-between text-[11px] text-[#0284C7] font-semibold">
                 <span>Trends • Maps • Alerts</span>
-                <span className="text-[#94A3B8] font-mono text-[10px]">04 ✓</span>
+                <span className="text-[#94A3B8] text-[10px] font-medium">04 ✓</span>
               </div>
             </div>
           </div>
@@ -1341,8 +1341,8 @@ export default function HomePage() {
                 <h3 className="text-base font-bold text-[#15803D]">Inquiry Confirmed & Persisted</h3>
 
                 {contactReferenceId && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#A7F3D0] text-[#15803D] font-mono text-xs font-bold shadow-xs">
-                    <span className="text-[#475569] font-sans font-semibold">Reference ID:</span>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#A7F3D0] text-[#15803D] text-xs font-semibold shadow-xs">
+                    <span className="text-[#475569] font-medium">Reference ID:</span>
                     <span>{contactReferenceId}</span>
                   </div>
                 )}
@@ -1362,7 +1362,7 @@ export default function HomePage() {
                   {submittedEmail && (
                     <div className="flex justify-between">
                       <span className="font-semibold text-[#1E293B]">Response Destination:</span>
-                      <span className="font-mono text-[#1E293B] truncate max-w-[220px]">{submittedEmail}</span>
+                      <span className="text-[#1E293B] truncate max-w-[220px]">{submittedEmail}</span>
                     </div>
                   )}
                   <div className="flex justify-between">

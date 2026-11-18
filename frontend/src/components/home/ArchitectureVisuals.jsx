@@ -147,7 +147,7 @@ export function Stage2WifiBlynkVisual({ className = 'w-full h-full' }) {
         {/* ESP32 IC Shield */}
         <rect x="12" y="38" width="42" height="34" rx="4" fill="#334155" stroke="#64748B" strokeWidth="1" />
         <text x="33" y="52" fill="#E2E8F0" fontSize="7" fontWeight="bold" textAnchor="middle" fontFamily="Inter, sans-serif">ESP32-S3</text>
-        <text x="33" y="62" fill="#38BDF8" fontSize="6" textAnchor="middle" fontFamily="'IBM Plex Mono', monospace">2.4 GHz</text>
+        <text x="33" y="62" fill="#38BDF8" fontSize="6" textAnchor="middle" fontFamily="Inter, sans-serif">2.4 GHz</text>
         {/* Status LED */}
         <circle cx="50" cy="78" r="2.5" fill="#10B981" />
       </g>

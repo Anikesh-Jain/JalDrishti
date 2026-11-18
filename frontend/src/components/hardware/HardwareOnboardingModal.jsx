@@ -468,7 +468,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-500">Claimed Station ID:</span>
-                  <span className="font-mono font-bold text-slate-900">{user?.assignedNodeId || 'Not yet claimed'}</span>
+                  <span className="font-semibold text-slate-900">{user?.assignedNodeId || 'Not yet claimed'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-500">Live Status:</span>
@@ -747,7 +747,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                           <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
                           <div>
                             <h4 className="text-xs font-bold text-slate-900">{currentDevice.name}</h4>
-                            <span className="text-[11px] font-mono text-slate-500">ID: {currentDevice.nodeId}</span>
+                            <span className="text-[11px] text-slate-500">ID: {currentDevice.nodeId}</span>
                           </div>
                         </div>
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white text-emerald-700 border border-emerald-300">
@@ -787,7 +787,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                           value={claimNodeId}
                           onChange={(e) => setClaimNodeId(e.target.value.toUpperCase())}
                           placeholder="e.g. NODE_001"
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono uppercase bg-white focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7]"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs uppercase bg-white focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7]"
                           required
                         />
                         <span className="text-[10px] text-slate-400 mt-0.5 block">
@@ -971,7 +971,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-slate-500">Pipeline Device:</span>
-                        <strong className="text-xs font-mono text-slate-900">
+                        <strong className="text-xs text-slate-900">
                           {currentDevice?.name || 'Linked Unit'} ({currentDevice?.nodeId || user?.assignedNodeId || 'None'})
                         </strong>
                       </div>

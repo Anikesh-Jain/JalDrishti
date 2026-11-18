@@ -44,13 +44,13 @@ export default function ParameterCard({
         <span className="text-3xl font-semibold text-slate-900 tracking-tight font-mono">
           {value !== undefined && value !== null ? value : '—'}
         </span>
-        {unit && <span className="text-xs font-medium font-mono text-slate-500">{unit}</span>}
+        {unit && <span className="text-xs font-medium text-slate-500">{unit}</span>}
       </div>
 
       {safeRange && (
         <div className="text-[11px] text-slate-500 font-medium mb-2">
           <span className="text-slate-400">Normal Range:</span>{' '}
-          <span className="font-mono text-slate-700">{safeRange}</span>
+          <span className="text-slate-700">{safeRange}</span>
         </div>
       )}
 

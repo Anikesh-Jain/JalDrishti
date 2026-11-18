@@ -71,7 +71,7 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
             <h4 className="text-base font-bold text-slate-900">
               {paramInfo.name}
             </h4>
-            <Badge variant="neutral" size="sm" className="font-mono text-[11px]">
+            <Badge variant="neutral" size="sm" className="text-[11px]">
               {alert.nodeId}
             </Badge>
             <Badge
@@ -132,7 +132,7 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
 
         <div>
           <span className="text-slate-500 block">Breach Count</span>
-          <span className="font-mono font-medium text-slate-700">
+          <span className="font-medium text-slate-700">
             {alert.breachCount || 1} event{(alert.breachCount || 1) > 1 ? 's' : ''}
           </span>
         </div>
@@ -154,7 +154,7 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
         <div className="mt-3 pt-3 border-t border-slate-100 text-xs space-y-2 bg-slate-50/60 p-3 rounded-lg">
           <div className="flex justify-between">
             <span className="text-slate-500">Configured Safe Range:</span>
-            <span className="font-mono font-medium text-slate-700">{paramInfo.safe}</span>
+            <span className="font-medium text-slate-700">{paramInfo.safe}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">First Occurrence Time:</span>

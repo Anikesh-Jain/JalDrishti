@@ -324,7 +324,7 @@ export default function AdminUsersPage() {
                         </td>
 
                         {/* Email */}
-                        <td className="py-3 px-3 text-slate-600 font-mono text-[11px]">
+                        <td className="py-3 px-3 text-slate-600 text-xs">
                           {u.email}
                         </td>
 
@@ -440,7 +440,7 @@ export default function AdminUsersPage() {
                     {userToDelete.role}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 font-mono">{userToDelete.email}</p>
+                <p className="text-xs text-slate-600">{userToDelete.email}</p>
               </div>
 
               {/* Edge Case Warning / Normal Caution */}

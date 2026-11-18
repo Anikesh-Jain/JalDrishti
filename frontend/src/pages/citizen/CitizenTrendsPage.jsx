@@ -442,7 +442,7 @@ export default function CitizenTrendsPage() {
                     Acceptable reference range: 6.5 – 8.5 pH (BIS IS 10500:2012 Clause 4, Table 1)
                   </p>
                 </div>
-                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-[#E0F7FF] text-[#0284C7] shrink-0 border border-[#BAE6FD]">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#E0F7FF] text-[#0284C7] shrink-0 border border-[#BAE6FD]">
                   pH Scale
                 </span>
               </div>
@@ -530,7 +530,7 @@ export default function CitizenTrendsPage() {
                     Optical clarity in NTU • Desirable: ≤ 1.0 NTU • Permissible limit: ≤ 5.0 NTU (BIS IS 10500)
                   </p>
                 </div>
-                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-700 shrink-0 border border-amber-200">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700 shrink-0 border border-amber-200">
                   NTU
                 </span>
               </div>
@@ -618,7 +618,7 @@ export default function CitizenTrendsPage() {
                     Inorganic salts in ppm (mg/L) • Acceptable: ≤ 500 ppm • Desirable: &lt; 300 ppm (BIS IS 10500)
                   </p>
                 </div>
-                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 shrink-0 border border-emerald-200">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 shrink-0 border border-emerald-200">
                   ppm (mg/L)
                 </span>
               </div>
@@ -706,7 +706,7 @@ export default function CitizenTrendsPage() {
                     Thermal telemetry in °C • Configured safety threshold: ≤ 35.0 °C • Ambient range: 10 – 40 °C
                   </p>
                 </div>
-                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-rose-50 text-rose-700 shrink-0 border border-rose-200">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-rose-50 text-rose-700 shrink-0 border border-rose-200">
                   °C
                 </span>
               </div>

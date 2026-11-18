@@ -28,7 +28,7 @@ export default function AdminStatCard({
       </div>
 
       <div className="flex items-baseline justify-between">
-        <div className="text-2xl sm:text-3xl font-semibold font-mono text-slate-900 tracking-tight">
+        <div className="text-2xl sm:text-3xl font-bold tabular-nums text-slate-900 tracking-tight">
           {value !== undefined && value !== null ? value : '—'}
         </div>
         {icon && <div className="text-slate-400 text-xl">{icon}</div>}

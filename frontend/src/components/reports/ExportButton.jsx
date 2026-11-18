@@ -55,7 +55,7 @@ export default function ExportButton({
       )}
       <span>{isExporting ? 'Generating CSV...' : label}</span>
       {recordCount > 0 && !isExporting && (
-        <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-brand-700 text-white rounded-full font-mono">
+        <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-brand-700 text-white rounded-full font-medium tabular-nums">
           {recordCount}
         </span>
       )}

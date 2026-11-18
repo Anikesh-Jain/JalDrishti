@@ -308,7 +308,7 @@ export default function CitizenDashboardPage() {
               ↻ Refresh Telemetry
             </Button>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold font-mono">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{isDemoData ? 'Simulated' : 'Live IoT'}</span>
             </div>
@@ -326,7 +326,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.totalStations}</span>
+              <span className="text-3xl font-bold tabular-nums text-slate-900">{fleetSummary.totalStations}</span>
               <p className="text-[11px] font-semibold text-cyan-700 mt-1 flex items-center gap-1">
                 <span>{fleetSummary.totalStations} calibrated monitoring nodes</span>
                 {isDemoData && <span className="text-[10px] text-amber-700 font-bold">(Simulated)</span>}
@@ -343,7 +343,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.safeStations}</span>
+              <span className="text-3xl font-bold tabular-nums text-slate-900">{fleetSummary.safeStations}</span>
               <p className="text-[11px] font-semibold text-emerald-700 mt-1">
                 {fleetSummary.safePercentage}% of fleet meets BIS IS 10500 standards
               </p>
@@ -359,7 +359,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.alertStations}</span>
+              <span className="text-3xl font-bold tabular-nums text-slate-900">{fleetSummary.alertStations}</span>
               <p className="text-[11px] font-semibold text-amber-700 mt-1">
                 {fleetSummary.alertStations > 0
                   ? `${fleetSummary.alertStations} station requires inspection`
@@ -377,7 +377,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-semibold font-mono text-slate-900">
+              <span className="text-3xl font-bold tabular-nums text-slate-900">
                 {totalReadingsCount.toLocaleString()}
               </span>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
@@ -406,7 +406,7 @@ export default function CitizenDashboardPage() {
                       ? 'Total Dissolved Solids (ppm) Trend'
                       : 'Water Temperature (°C) Trend'}
                   </h3>
-                  <span className="text-[11px] font-mono text-slate-500 font-semibold">
+                  <span className="text-[11px] text-slate-500 font-medium">
                     [{selectedStationId === 'ALL' ? 'Station 1 Preview' : currentStationObj.nodeId}]
                   </span>
                 </div>
@@ -731,8 +731,11 @@ export default function CitizenDashboardPage() {
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
               Latest Ingested Telemetry — {currentStationObj.name}
             </span>
-            <span className="text-[11px] font-mono text-slate-400">
-              Timestamp: {new Date(currentStationReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            <span className="text-[11px] text-slate-400">
+              Timestamp:{' '}
+              <span className="font-mono">
+                {new Date(currentStationReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
             </span>
           </div>
 
@@ -860,7 +863,7 @@ export default function CitizenDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-slate-900">Active Early Warning Breaches</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                   {activeAlerts.length} Active
                 </span>
               </div>
