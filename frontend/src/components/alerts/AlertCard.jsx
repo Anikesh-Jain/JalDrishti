@@ -83,7 +83,7 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Detected: {formatTimestamp(alert.timestamp)}
+            Detected: <span className="font-mono">{formatTimestamp(alert.timestamp)}</span>
           </p>
         </div>
 
@@ -118,21 +118,21 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 border-t border-slate-100 text-xs">
         <div>
           <span className="text-slate-500 block">Measured Value</span>
-          <span className="font-bold text-slate-900 text-sm">
+          <span className="font-mono font-semibold text-slate-900 text-sm">
             {alert.value != null ? `${alert.value} ${paramInfo.unit}`.trim() : '—'}
           </span>
         </div>
 
         <div>
           <span className="text-slate-500 block">Threshold Limit</span>
-          <span className="font-medium text-slate-700">
+          <span className="font-mono font-medium text-slate-700">
             {alert.thresholdLimit != null ? `${alert.thresholdLimit} ${paramInfo.unit}`.trim() : '—'}
           </span>
         </div>
 
         <div>
           <span className="text-slate-500 block">Breach Count</span>
-          <span className="font-medium text-slate-700">
+          <span className="font-mono font-medium text-slate-700">
             {alert.breachCount || 1} event{(alert.breachCount || 1) > 1 ? 's' : ''}
           </span>
         </div>
@@ -141,7 +141,7 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
           <span className="text-slate-500 block">
             {isActive ? 'Latest Breach' : 'Resolved At'}
           </span>
-          <span className="font-medium text-slate-700">
+          <span className="font-mono font-medium text-slate-700">
             {isActive
               ? formatTimestamp(alert.lastBreachedAt)
               : formatTimestamp(alert.resolvedAt)}
@@ -154,20 +154,20 @@ export default function AlertCard({ alert, onInspect, defaultExpanded = false })
         <div className="mt-3 pt-3 border-t border-slate-100 text-xs space-y-2 bg-slate-50/60 p-3 rounded-lg">
           <div className="flex justify-between">
             <span className="text-slate-500">Configured Safe Range:</span>
-            <span className="font-medium text-slate-700">{paramInfo.safe}</span>
+            <span className="font-mono font-medium text-slate-700">{paramInfo.safe}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">First Occurrence Time:</span>
-            <span className="font-medium text-slate-700">{formatTimestamp(alert.timestamp)}</span>
+            <span className="font-mono font-medium text-slate-700">{formatTimestamp(alert.timestamp)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">Latest Telemetry Breach:</span>
-            <span className="font-medium text-slate-700">{formatTimestamp(alert.lastBreachedAt)}</span>
+            <span className="font-mono font-medium text-slate-700">{formatTimestamp(alert.lastBreachedAt)}</span>
           </div>
           {alert.resolvedAt && (
             <div className="flex justify-between">
               <span className="text-slate-500">Return to Safe Range:</span>
-              <span className="font-medium text-emerald-700 font-semibold">{formatTimestamp(alert.resolvedAt)}</span>
+              <span className="font-mono font-semibold text-emerald-700">{formatTimestamp(alert.resolvedAt)}</span>
             </div>
           )}
           {alert.severity && (

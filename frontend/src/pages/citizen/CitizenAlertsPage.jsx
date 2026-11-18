@@ -107,7 +107,7 @@ export default function CitizenAlertsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Alerts</h1>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Alerts</h1>
               {isDemo && <DemoBadge text="Simulated Feed" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -145,7 +145,7 @@ export default function CitizenAlertsPage() {
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`text-[11px] ${activeTab === tab.label ? 'text-white font-black' : tab.color}`}>
+              <span className={`text-[11px] font-mono ${activeTab === tab.label ? 'text-white font-semibold' : tab.color}`}>
                 ({counts[tab.label] || 0})
               </span>
             </button>

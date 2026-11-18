@@ -201,10 +201,10 @@ export default function ThresholdRow({
                 value={minVal}
                 onChange={(e) => setMinVal(e.target.value)}
                 placeholder="E.g. 6.5"
-                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-colors"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-colors"
                 required
               />
-              <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">
+              <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-mono font-medium">
                 {unitVal || threshold.unit}
               </span>
             </div>
@@ -227,10 +227,10 @@ export default function ThresholdRow({
                 value={maxVal}
                 onChange={(e) => setMaxVal(e.target.value)}
                 placeholder="E.g. 8.5"
-                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-colors"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-colors"
                 required
               />
-              <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">
+              <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-mono font-medium">
                 {unitVal || threshold.unit}
               </span>
             </div>
@@ -297,7 +297,7 @@ export default function ThresholdRow({
             {threshold.updatedAt ? (
               <span>
                 Last updated:{' '}
-                <strong className="text-slate-600 font-semibold">
+                <strong className="text-slate-600 font-mono font-medium">
                   {new Date(threshold.updatedAt).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',

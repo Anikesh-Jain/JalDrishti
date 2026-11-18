@@ -89,7 +89,7 @@ export default function CitizenMapPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Live GIS Station Map</h1>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Live GIS Station Map</h1>
               {isDemo && <DemoBadge text="Simulated Fleet" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">

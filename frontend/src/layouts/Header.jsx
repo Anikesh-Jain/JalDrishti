@@ -211,8 +211,8 @@ export default function Header({ onToggleSidebar }) {
 
         {/* Date and Live Data Badge */}
         <div className="hidden xl:flex items-center gap-2 text-xs text-[#475569] font-medium">
-          <span>{currentTime || 'Oct 10, 2026  10:27 PM'}</span>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0] font-semibold text-[11px]">
+          <span className="font-mono text-[11px]">{currentTime || 'Oct 10, 2026  10:27 PM'}</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DDF8E8] text-[#15803D] border border-[#A7F3D0] font-medium text-[11px]">
             <span className="w-2 h-2 rounded-full bg-[#15803D] animate-pulse" />
             <span>Live Data</span>
           </div>
@@ -257,9 +257,9 @@ export default function Header({ onToggleSidebar }) {
                             {a.parameter.toUpperCase()} Limit Breach
                           </p>
                           <p className="text-[11px] text-slate-500 mt-0.5">
-                            Measured value: {a.value} (Limit: {a.thresholdLimit})
+                            Measured value: <span className="font-mono font-medium text-slate-700">{a.value}</span> (Limit: <span className="font-mono">{a.thresholdLimit}</span>)
                           </p>
-                          <span className="text-[10px] text-slate-400 mt-1 block">
+                          <span className="text-[10px] font-mono text-slate-400 mt-1 block">
                             Station: {a.nodeId}
                           </span>
                         </div>
@@ -285,8 +285,8 @@ export default function Header({ onToggleSidebar }) {
             aria-label="User profile menu"
           >
             {/* Avatar Circle with Initial */}
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0284C7] to-[#38BDF8] text-white font-extrabold flex items-center justify-center text-sm shadow-sm shadow-[#0284C7]/20 ring-2 ring-[#BAE6FD]/60 select-none">
-              <span className="text-white drop-shadow-xs select-none font-bold">{userInitial}</span>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0284C7] to-[#38BDF8] text-white font-bold flex items-center justify-center text-sm shadow-sm shadow-[#0284C7]/20 ring-2 ring-[#BAE6FD]/60 select-none">
+              <span className="text-white drop-shadow-xs select-none font-semibold">{userInitial}</span>
             </div>
 
             {/* User Name & Role Badge (Desktop) */}

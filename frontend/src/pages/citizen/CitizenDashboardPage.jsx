@@ -268,7 +268,7 @@ export default function CitizenDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Citizen Dashboard</h1>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Citizen Dashboard</h1>
               {isDemoData && <DemoBadge text="Simulated Dataset" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -326,7 +326,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">{fleetSummary.totalStations}</span>
+              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.totalStations}</span>
               <p className="text-[11px] font-semibold text-cyan-700 mt-1 flex items-center gap-1">
                 <span>{fleetSummary.totalStations} calibrated monitoring nodes</span>
                 {isDemoData && <span className="text-[10px] text-amber-700 font-bold">(Simulated)</span>}
@@ -343,7 +343,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">{fleetSummary.safeStations}</span>
+              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.safeStations}</span>
               <p className="text-[11px] font-semibold text-emerald-700 mt-1">
                 {fleetSummary.safePercentage}% of fleet meets BIS IS 10500 standards
               </p>
@@ -359,7 +359,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">{fleetSummary.alertStations}</span>
+              <span className="text-3xl font-semibold font-mono text-slate-900">{fleetSummary.alertStations}</span>
               <p className="text-[11px] font-semibold text-amber-700 mt-1">
                 {fleetSummary.alertStations > 0
                   ? `${fleetSummary.alertStations} station requires inspection`
@@ -377,7 +377,7 @@ export default function CitizenDashboardPage() {
               </div>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {totalReadingsCount.toLocaleString()}
               </span>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
@@ -696,7 +696,7 @@ export default function CitizenDashboardPage() {
               </ResponsiveContainer>
               {/* Centered Percentage */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-black font-mono text-slate-900 leading-none">
+                <span className="text-3xl font-semibold font-mono text-slate-900 leading-none">
                   {fleetSummary.totalStations > 0 ? `${fleetSummary.safePercentage}%` : '—'}
                 </span>
                 <span className="text-[10px] text-slate-500 font-semibold mt-1">
@@ -741,7 +741,7 @@ export default function CitizenDashboardPage() {
             <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 font-medium">Acidity (pH)</span>
-                <p className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                <p className="text-2xl font-semibold font-mono text-slate-900 mt-0.5">
                   {typeof currentStationReading?.pH === 'number' ? currentStationReading.pH.toFixed(2) : '—'}
                 </p>
                 <span className="text-[10px] text-slate-500 font-semibold">
@@ -770,7 +770,7 @@ export default function CitizenDashboardPage() {
             <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 font-medium">Turbidity</span>
-                <p className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                <p className="text-2xl font-semibold font-mono text-slate-900 mt-0.5">
                   {typeof currentStationReading?.turbidity === 'number' ? `${currentStationReading.turbidity.toFixed(2)} NTU` : '—'}
                 </p>
                 <span className="text-[10px] text-slate-500 font-semibold">
@@ -799,7 +799,7 @@ export default function CitizenDashboardPage() {
             <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 font-medium">Total Dissolved Solids</span>
-                <p className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                <p className="text-2xl font-semibold font-mono text-slate-900 mt-0.5">
                   {typeof currentStationReading?.tds === 'number' ? `${currentStationReading.tds} ppm` : '—'}
                 </p>
                 <span className="text-[10px] text-slate-500 font-semibold">
@@ -828,7 +828,7 @@ export default function CitizenDashboardPage() {
             <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 font-medium">Water Temperature</span>
-                <p className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                <p className="text-2xl font-semibold font-mono text-slate-900 mt-0.5">
                   {typeof currentStationReading?.temperature === 'number' ? `${currentStationReading.temperature.toFixed(1)} °C` : '—'}
                 </p>
                 <span className="text-[10px] text-slate-500 font-semibold">
@@ -842,7 +842,7 @@ export default function CitizenDashboardPage() {
             <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 font-medium">Dissolved Oxygen</span>
-                <p className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                <p className="text-2xl font-semibold font-mono text-slate-900 mt-0.5">
                   {typeof currentStationReading?.dissolvedOxygen === 'number' ? `${currentStationReading.dissolvedOxygen.toFixed(1)} mg/L` : '7.2 mg/L'}
                 </p>
                 <span className="text-[10px] text-slate-500 font-semibold">

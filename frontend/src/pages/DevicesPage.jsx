@@ -273,13 +273,13 @@ export default function DevicesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs text-slate-500 font-medium">Registered Stations</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{stations.length}</p>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">ESP32-S3 Microcontroller Nodes</span>
+          <p className="text-2xl font-semibold font-mono text-slate-900 mt-1">{stations.length}</p>
+          <span className="text-[11px] font-mono text-slate-400 mt-0.5 block">ESP32-S3 Microcontroller Nodes</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs text-slate-500 font-medium">Online Stations</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">
+          <p className="text-2xl font-semibold font-mono text-emerald-600 mt-1">
             {stations.filter((s) => s.status === 'Online').length}
           </p>
           <span className="text-[11px] text-slate-400 mt-0.5 block">Active Telemetry Ingestion</span>
@@ -287,13 +287,13 @@ export default function DevicesPage() {
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs text-slate-500 font-medium">Sensor Probes per Node</p>
-          <p className="text-2xl font-bold text-cyan-600 mt-1">4 Sensors</p>
+          <p className="text-2xl font-semibold font-mono text-cyan-600 mt-1">4 Sensors</p>
           <span className="text-[11px] text-slate-400 mt-0.5 block">pH, Turbidity, TDS, Temp</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs text-slate-500 font-medium">Ingestion Protocol</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1">HTTPS / JSON</p>
+          <p className="text-2xl font-semibold font-mono text-slate-800 mt-1">HTTPS / JSON</p>
           <span className="text-[11px] text-slate-400 mt-0.5 block">Device-Key Authenticated</span>
         </div>
       </div>

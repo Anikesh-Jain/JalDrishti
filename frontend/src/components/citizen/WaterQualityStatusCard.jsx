@@ -92,7 +92,7 @@ export default function WaterQualityStatusCard({
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
             Current Water Condition
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             {config.title}
           </h2>
         </div>
@@ -120,7 +120,8 @@ export default function WaterQualityStatusCard({
         </div>
         {formattedTime && (
           <div>
-            <span className="font-semibold text-slate-700">Last Updated:</span> {formattedTime}
+            <span className="font-semibold text-slate-700">Last Updated:</span>{' '}
+            <span className="font-mono text-slate-600">{formattedTime}</span>
           </div>
         )}
       </div>

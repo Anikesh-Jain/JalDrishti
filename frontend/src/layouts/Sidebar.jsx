@@ -273,7 +273,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 Mode: <strong className="text-[#0284C7]">{isAdmin ? 'Administrator' : 'Citizen'}</strong>
               </span>
             </div>
-            <span className="text-[10px] text-[#475569] uppercase tracking-wider font-semibold">
+            <span className="text-[10px] font-mono text-[#475569] uppercase tracking-wider font-medium">
               v1.0
             </span>
           </div>

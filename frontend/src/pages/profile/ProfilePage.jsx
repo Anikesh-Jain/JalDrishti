@@ -161,8 +161,8 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col items-center text-center">
             {/* Avatar */}
             <div className="relative mb-4">
-              <div className="w-24 h-24 rounded-full bg-blue-600 bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white text-3xl font-extrabold shadow-md ring-4 ring-cyan-100/60 select-none">
-                <span className="text-white drop-shadow-sm select-none font-black">{userInitial}</span>
+              <div className="w-24 h-24 rounded-full bg-blue-600 bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white text-3xl font-bold shadow-md ring-4 ring-cyan-100/60 select-none">
+                <span className="text-white drop-shadow-sm select-none font-bold">{userInitial}</span>
               </div>
             </div>
 

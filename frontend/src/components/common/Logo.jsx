@@ -36,13 +36,13 @@ export default function Logo({
         <div className="flex flex-col justify-center leading-none">
           <div className="flex items-center gap-1">
             <span
-              className={`text-xl font-extrabold font-heading tracking-tight ${
+              className={`text-xl font-bold font-heading tracking-tight ${
                 dark ? 'text-white' : 'text-slate-900'
               }`}
             >
               Jal
             </span>
-            <span className="text-xl font-extrabold font-heading tracking-tight text-cyan-500">
+            <span className="text-xl font-bold font-heading tracking-tight text-cyan-500">
               Drishti
             </span>
           </div>

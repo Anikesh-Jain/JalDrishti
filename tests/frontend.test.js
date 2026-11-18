@@ -113,6 +113,26 @@ async function runFrontendSuite() {
     '15.6 Integrated Admin Portal entry present in Header, Sidebar, and AppLayout and strictly gated by Admin role'
   );
 
+  // 15.7 Typography system verification (Inter + IBM Plex Mono only, no conflicting font imports)
+  const indexHtmlCode = fs.readFileSync(path.join(frontendDir, 'index.html'), 'utf8');
+  const tailwindCode = fs.readFileSync(path.join(frontendDir, 'tailwind.config.js'), 'utf8');
+  const cssCode = fs.readFileSync(path.join(frontendDir, 'src/styles/index.css'), 'utf8');
+  const typographyValid =
+    indexHtmlCode.includes('family=Inter:wght@400;500;600;700') &&
+    indexHtmlCode.includes('family=IBM+Plex+Mono:wght@400;500;600') &&
+    !indexHtmlCode.includes('IBM+Plex+Sans') &&
+    !indexHtmlCode.includes('JetBrains+Mono') &&
+    tailwindCode.includes("'Inter'") &&
+    tailwindCode.includes("'IBM Plex Mono'") &&
+    !tailwindCode.includes('IBM Plex Sans') &&
+    !tailwindCode.includes('JetBrains Mono') &&
+    cssCode.includes("'Inter'") &&
+    cssCode.includes("'IBM Plex Mono'");
+  ctx.assert(
+    typographyValid,
+    '15.7 Typography strictly configured with Inter (400/500/600/700) and IBM Plex Mono (400/500/600) with zero conflicting font families'
+  );
+
   return { suite: ctx.suiteName, passed: ctx.passed, failed: ctx.failed };
 }
 

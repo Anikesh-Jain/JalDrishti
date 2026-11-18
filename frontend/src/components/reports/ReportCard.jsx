@@ -224,7 +224,7 @@ export default function ReportCard({
                         <td className="px-3 py-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
                           {formatTime(row.timestamp)}
                         </td>
-                        <td className="px-3 py-2 font-semibold text-slate-900 whitespace-nowrap">
+                        <td className="px-3 py-2 font-mono font-medium text-slate-900 whitespace-nowrap">
                           {row.nodeId}
                         </td>
                         <td className="px-3 py-2 font-mono">
@@ -261,7 +261,7 @@ export default function ReportCard({
                       <td className="px-3 py-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
                         {formatTime(row.timestamp)}
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-900 whitespace-nowrap">
+                      <td className="px-3 py-2 font-mono font-medium text-slate-900 whitespace-nowrap">
                         {row.nodeId}
                       </td>
                       <td className="px-3 py-2 font-medium text-slate-900">

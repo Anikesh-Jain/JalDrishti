@@ -70,12 +70,17 @@ export default function SensorNodeMarker({
           {/* Header matching reference popup card */}
           <div className="flex items-start justify-between border-b border-slate-100 pb-2">
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
+              <h4 className="font-semibold text-sm text-slate-900 leading-tight">
                 {node.name || node.nodeId}
               </h4>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {node.location.address || 'Monitoring Location'}
               </p>
+              {node.nodeId && (
+                <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                  {node.nodeId}
+                </span>
+              )}
             </div>
             <Badge
               variant={
@@ -94,26 +99,26 @@ export default function SensorNodeMarker({
           {/* Telemetry Metrics */}
           <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
             <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">pH</span>
-              <strong className="text-slate-900 text-sm font-black">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-medium">pH</span>
+              <strong className="text-slate-900 text-sm font-mono font-semibold">
                 {latestReading?.pH !== undefined ? latestReading.pH.toFixed(1) : '7.2'}
               </strong>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">TDS</span>
-              <strong className="text-slate-900 text-sm font-black">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-medium">TDS</span>
+              <strong className="text-slate-900 text-sm font-mono font-semibold">
                 {latestReading?.tds !== undefined ? `${latestReading.tds} ppm` : '120 ppm'}
               </strong>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Turbidity</span>
-              <strong className="text-slate-900 text-sm font-black">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-medium">Turbidity</span>
+              <strong className="text-slate-900 text-sm font-mono font-semibold">
                 {latestReading?.turbidity !== undefined ? `${latestReading.turbidity.toFixed(1)} NTU` : '2.1 NTU'}
               </strong>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Temperature</span>
-              <strong className="text-slate-900 text-sm font-black">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-medium">Temperature</span>
+              <strong className="text-slate-900 text-sm font-mono font-semibold">
                 {latestReading?.temperature !== undefined ? `${latestReading.temperature.toFixed(1)} °C` : '22.4 °C'}
               </strong>
             </div>
@@ -123,7 +128,7 @@ export default function SensorNodeMarker({
           <div className="pt-1">
             <Link
               to={`/citizen/trends?nodeId=${encodeURIComponent(node.nodeId)}`}
-              className="block w-full py-2 px-3 text-center text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] rounded-xl transition-colors shadow-xs"
+              className="block w-full py-2 px-3 text-center text-xs font-medium text-white bg-[#0284C7] hover:bg-[#0369A1] rounded-xl transition-colors shadow-xs"
             >
               View Details →
             </Link>

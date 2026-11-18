@@ -342,7 +342,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
           {view === 'initial' && (
             <div className="space-y-5 animate-fadeIn">
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Do you have a JalDrishti ready-made sensor device?
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 leading-relaxed">
@@ -452,7 +452,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900">Resume Device Setup</h3>
+                <h3 className="text-xl font-semibold text-slate-900">Resume Device Setup</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                   Welcome back! You previously indicated you have a JalDrishti monitoring unit.
                   {user?.assignedNodeId
@@ -511,7 +511,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                 <CheckCircleIcon className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900">Preference Saved</h3>
+                <h3 className="text-xl font-semibold text-slate-900">Preference Saved</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                   You do not need hardware to benefit from JalDrishti. You retain full access to community water monitoring:
                 </p>
@@ -571,7 +571,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900">About the Ready-Made JalDrishti Device</h3>
+                <h3 className="text-xl font-semibold text-slate-900">About the Ready-Made JalDrishti Device</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                   The JalDrishti monitor is an <strong>all-in-one, factory-calibrated inline appliance</strong> designed for household and community pipelines:
                 </p>
@@ -657,7 +657,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
               {setupStep === 'install' && (
                 <div className="space-y-4 animate-fadeIn">
                   <div>
-                    <h3 className="text-lg font-black text-slate-900">
+                    <h3 className="text-lg font-semibold text-slate-900">
                       Step 1: Mount Appliance in Pipeline
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -731,7 +731,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
               {setupStep === 'claim' && (
                 <div className="space-y-4 animate-fadeIn">
                   <div>
-                    <h3 className="text-lg font-black text-slate-900">
+                    <h3 className="text-lg font-semibold text-slate-900">
                       Step 2: Claim Your Ready-Made Device
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -854,7 +854,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
               {setupStep === 'wifi' && (
                 <div className="space-y-4 animate-fadeIn">
                   <div>
-                    <h3 className="text-lg font-black text-slate-900">
+                    <h3 className="text-lg font-semibold text-slate-900">
                       Step 3: Connect Device to Wi-Fi
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -948,7 +948,7 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                 <div className="space-y-4 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-black text-slate-900">
+                      <h3 className="text-lg font-semibold text-slate-900">
                         Step 4: Live Connection & Sensor Stream
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -1011,38 +1011,38 @@ export default function HardwareOnboardingModal({ isOpen, initialStep = 'initial
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                         {/* pH Card */}
                         <div className="p-3 rounded-xl bg-white border border-slate-200 text-center shadow-xs">
-                          <span className="text-[10px] font-bold text-slate-400 block uppercase">pH Level</span>
-                          <span className="text-xl font-black text-slate-900 block my-0.5">
+                          <span className="text-[10px] font-semibold text-slate-400 block uppercase">pH Level</span>
+                          <span className="text-xl font-mono font-semibold text-slate-900 block my-0.5">
                             {Number(latestReading.pH || 7.0).toFixed(2)}
                           </span>
-                          <span className="text-[10px] font-semibold text-emerald-600">Safe (6.5 - 8.5)</span>
+                          <span className="text-[10px] font-medium text-emerald-600">Safe (6.5 - 8.5)</span>
                         </div>
 
                         {/* Turbidity Card */}
                         <div className="p-3 rounded-xl bg-white border border-slate-200 text-center shadow-xs">
-                          <span className="text-[10px] font-bold text-slate-400 block uppercase">Turbidity</span>
-                          <span className="text-xl font-black text-slate-900 block my-0.5">
+                          <span className="text-[10px] font-semibold text-slate-400 block uppercase">Turbidity</span>
+                          <span className="text-xl font-mono font-semibold text-slate-900 block my-0.5">
                             {Number(latestReading.turbidity || 0).toFixed(1)} <span className="text-xs font-normal">NTU</span>
                           </span>
-                          <span className="text-[10px] font-semibold text-emerald-600">Clear (&lt; 5.0)</span>
+                          <span className="text-[10px] font-medium text-emerald-600">Clear (&lt; 5.0)</span>
                         </div>
 
                         {/* TDS Card */}
                         <div className="p-3 rounded-xl bg-white border border-slate-200 text-center shadow-xs">
-                          <span className="text-[10px] font-bold text-slate-400 block uppercase">TDS</span>
-                          <span className="text-xl font-black text-slate-900 block my-0.5">
+                          <span className="text-[10px] font-semibold text-slate-400 block uppercase">TDS</span>
+                          <span className="text-xl font-mono font-semibold text-slate-900 block my-0.5">
                             {Math.round(latestReading.tds || 0)} <span className="text-xs font-normal">ppm</span>
                           </span>
-                          <span className="text-[10px] font-semibold text-emerald-600">Good (&lt; 300)</span>
+                          <span className="text-[10px] font-medium text-emerald-600">Good (&lt; 300)</span>
                         </div>
 
                         {/* Temperature Card */}
                         <div className="p-3 rounded-xl bg-white border border-slate-200 text-center shadow-xs">
-                          <span className="text-[10px] font-bold text-slate-400 block uppercase">Temperature</span>
-                          <span className="text-xl font-black text-slate-900 block my-0.5">
+                          <span className="text-[10px] font-semibold text-slate-400 block uppercase">Temperature</span>
+                          <span className="text-xl font-mono font-semibold text-slate-900 block my-0.5">
                             {Number(latestReading.temperature || 0).toFixed(1)} <span className="text-xs font-normal">°C</span>
                           </span>
-                          <span className="text-[10px] font-semibold text-slate-500">Normal</span>
+                          <span className="text-[10px] font-medium text-slate-500">Normal</span>
                         </div>
                       </div>
                     ) : (

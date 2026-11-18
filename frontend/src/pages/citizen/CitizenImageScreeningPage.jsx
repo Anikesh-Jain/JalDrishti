@@ -139,7 +139,7 @@ export default function CitizenImageScreeningPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="pb-2 border-b border-slate-200">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Image Screening</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Image Screening</h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
             AI-powered water quality image analysis
           </p>

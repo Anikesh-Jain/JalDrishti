@@ -56,7 +56,7 @@ function ParameterTooltip({ active, payload, label, unit, name }) {
         </div>
         <div className="flex items-baseline justify-between gap-3 pt-0.5">
           <span className="font-semibold text-slate-600">{name}:</span>
-          <span className="font-mono font-black text-slate-900 text-sm">
+          <span className="font-mono font-semibold text-slate-900 text-sm">
             {value !== null && value !== undefined ? `${value} ${unit}`.trim() : '—'}
           </span>
         </div>
@@ -235,7 +235,7 @@ export default function CitizenTrendsPage() {
               <span>Telemetry Analytics &amp; Trends</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Water Quality Telemetry</h1>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Water Quality Telemetry</h1>
               {isDemo && <DemoBadge text="Simulated Dataset" />}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -323,7 +323,7 @@ export default function CitizenTrendsPage() {
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {latestReading?.pH !== undefined ? latestReading.pH.toFixed(2) : (readings[readings.length - 1]?.pH ?? '—')}
               </span>
               <p className="text-[11px] text-slate-500 mt-1">
@@ -350,7 +350,7 @@ export default function CitizenTrendsPage() {
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {latestReading?.turbidity !== undefined
                   ? `${latestReading.turbidity.toFixed(2)} NTU`
                   : readings[readings.length - 1]?.Turbidity !== null && readings[readings.length - 1]?.Turbidity !== undefined
@@ -381,7 +381,7 @@ export default function CitizenTrendsPage() {
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {latestReading?.tds !== undefined
                   ? `${latestReading.tds} ppm`
                   : readings[readings.length - 1]?.TDS !== null && readings[readings.length - 1]?.TDS !== undefined
@@ -412,7 +412,7 @@ export default function CitizenTrendsPage() {
               </Badge>
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {latestReading?.temperature !== undefined
                   ? `${latestReading.temperature.toFixed(1)} °C`
                   : readings[readings.length - 1]?.Temperature !== null && readings[readings.length - 1]?.Temperature !== undefined

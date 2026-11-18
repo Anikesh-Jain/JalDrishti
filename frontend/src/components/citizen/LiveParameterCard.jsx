@@ -88,7 +88,7 @@ export default function LiveParameterCard({
       {/* Top Header */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+          <h3 className="text-sm font-semibold text-slate-800 tracking-tight">
             {name}
           </h3>
           <Badge
@@ -104,14 +104,14 @@ export default function LiveParameterCard({
         {/* Telemetry Value Display */}
         <div className="flex items-baseline gap-1.5 my-3">
           <span
-            className={`text-3xl font-extrabold tracking-tight font-mono ${
+            className={`text-3xl font-semibold tracking-tight font-mono ${
               !isNumeric ? 'text-slate-400' : 'text-slate-900'
             }`}
           >
             {displayValue}
           </span>
           {unit && (
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-medium font-mono text-slate-500">
               {unit}
             </span>
           )}
@@ -123,7 +123,7 @@ export default function LiveParameterCard({
         {resolvedRangeText && (
           <div className="text-[11px] text-slate-500 font-medium flex items-center justify-between">
             <span className="text-slate-400">Normal Range:</span>
-            <span className="font-semibold text-slate-700">{resolvedRangeText}</span>
+            <span className="font-mono font-medium text-slate-700">{resolvedRangeText}</span>
           </div>
         )}
 

@@ -39,7 +39,7 @@ export default function AppLayout({ children }) {
             <BrandLogoLink size={36} dark={false} tagline={true} />
 
             {/* Public Navigation Links (Desktop) */}
-            <nav className="hidden md:flex items-center space-x-6 text-xs font-semibold text-[#547181]" aria-label="Main Navigation">
+            <nav className="hidden md:flex items-center space-x-6 text-xs font-medium text-[#547181]" aria-label="Main Navigation">
               {navLinks.map((link) => (
                 <a
                   key={link.name}

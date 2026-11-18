@@ -175,12 +175,12 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Active Breach Alerts</span>
+              <span className="text-xs font-medium text-slate-500">Active Breach Alerts</span>
               <AlertTriangleIcon className="w-5 h-5 text-amber-500" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">{data.activeAlerts.length}</span>
-              <p className="text-[11px] font-semibold mt-1">
+              <span className="text-3xl font-semibold font-mono text-slate-900">{data.activeAlerts.length}</span>
+              <p className="text-[11px] font-medium mt-1">
                 {data.activeAlerts.length === 0 ? (
                   <span className="text-emerald-600">Zero active breaches</span>
                 ) : (
@@ -192,14 +192,14 @@ export default function AdminDashboardPage() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">System & Database</span>
+              <span className="text-xs font-medium text-slate-500">System & Database</span>
               <ShieldCheckIcon className="w-5 h-5 text-emerald-500" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {isHealthy ? '100%' : 'Degraded'}
               </span>
-              <p className="text-[11px] font-semibold text-emerald-600 mt-1">
+              <p className="text-[11px] font-medium text-emerald-600 mt-1">
                 MongoDB & Express API Online
               </p>
             </div>
@@ -207,14 +207,14 @@ export default function AdminDashboardPage() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Monitoring Stations</span>
+              <span className="text-xs font-medium text-slate-500">Monitoring Stations</span>
               <MapPinIcon className="w-5 h-5 text-cyan-600" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-semibold font-mono text-slate-900">
                 {data.nodes.length}
               </span>
-              <p className="text-[11px] font-semibold text-slate-500 mt-1">
+              <p className="text-[11px] font-medium text-slate-500 mt-1">
                 {data.nodes.length === 1 ? '1 active sensor node connected' : `${data.nodes.length} active sensor nodes connected`}
               </p>
             </div>
@@ -222,14 +222,14 @@ export default function AdminDashboardPage() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">SMS Notification Service</span>
+              <span className="text-xs font-medium text-slate-500">SMS Notification Service</span>
               <SmartphoneIcon className="w-5 h-5 text-indigo-500" />
             </div>
             <div className="mt-3">
-              <span className="text-3xl font-black text-slate-900">
+              <span className="text-3xl font-semibold text-slate-900">
                 {data.notificationsConfig?.smsEnabled !== false ? 'Active' : 'Muted'}
               </span>
-              <p className="text-[11px] font-semibold text-slate-500 mt-1">
+              <p className="text-[11px] font-medium text-slate-500 mt-1">
                 Provider: {data.notificationsConfig?.provider || 'Mock Gateway'}
               </p>
             </div>
@@ -264,9 +264,9 @@ export default function AdminDashboardPage() {
                         <Badge variant="unsafe" size="sm">Active</Badge>
                       </div>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        Measured Value: <strong>{alert.value}</strong> • Limit Bound: <strong>{alert.thresholdLimit}</strong>
+                        Measured Value: <strong className="font-mono font-semibold text-slate-900">{alert.value}</strong> • Limit Bound: <strong className="font-mono font-semibold text-slate-900">{alert.thresholdLimit}</strong>
                       </p>
-                      <span className="text-[10px] text-slate-400 mt-1 block">
+                      <span className="text-[10px] font-mono text-slate-400 mt-1 block">
                         Station: {alert.nodeId} • First breached: {new Date(alert.timestamp).toLocaleString()}
                       </span>
                     </div>

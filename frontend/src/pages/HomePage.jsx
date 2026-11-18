@@ -262,7 +262,7 @@ export default function HomePage() {
               </div>
 
               {/* Primary Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-heading text-white tracking-tight leading-[1.1] drop-shadow-lg">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-heading text-white tracking-tight leading-[1.12] drop-shadow-lg">
                 Cleaner Water, <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BAE6FD] via-[#E0F7FF] to-[#DDF8E8]">
                   Safer Tomorrow.
@@ -352,7 +352,7 @@ export default function HomePage() {
                   <div className="grid grid-cols-2 gap-3 py-1">
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Acidity (pH)</span>
-                      <span className="text-2xl font-black text-[#0284C7] mt-1 block font-mono">
+                      <span className="text-2xl font-semibold text-[#0284C7] mt-1 block font-mono">
                         {typeof latestReading?.pH === 'number' ? latestReading.pH.toFixed(2) : '7.35'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">BIS 6.5 — 8.5 Limit</span>
@@ -360,7 +360,7 @@ export default function HomePage() {
 
                     <div className="p-3 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]">
                       <span className="text-[11px] text-[#475569] block font-medium">Dissolved Solids</span>
-                      <span className="text-2xl font-black text-[#15803D] mt-1 block font-mono">
+                      <span className="text-2xl font-semibold text-[#15803D] mt-1 block font-mono">
                         {typeof latestReading?.tds === 'number' ? `${latestReading.tds} ppm` : '245 ppm'}
                       </span>
                       <span className="text-[10px] text-[#15803D] font-semibold">&lt; 500 ppm Permissible</span>
@@ -371,19 +371,19 @@ export default function HomePage() {
                   <div className="grid grid-cols-3 gap-2 py-0.5 text-center">
                     <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
                       <span className="text-[10px] text-[#64748B] block font-medium">Turbidity</span>
-                      <span className="text-xs font-black text-[#0284C7] mt-0.5 block font-mono">
+                      <span className="text-xs font-semibold text-[#0284C7] mt-0.5 block font-mono">
                         {typeof latestReading?.turbidity === 'number' ? `${latestReading.turbidity.toFixed(2)} NTU` : '1.42 NTU'}
                       </span>
                     </div>
                     <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
                       <span className="text-[10px] text-[#64748B] block font-medium">Temp</span>
-                      <span className="text-xs font-black text-rose-600 mt-0.5 block font-mono">
+                      <span className="text-xs font-semibold text-rose-600 mt-0.5 block font-mono">
                         {typeof latestReading?.temperature === 'number' ? `${latestReading.temperature.toFixed(1)} °C` : '23.8 °C'}
                       </span>
                     </div>
                     <div className="p-2 rounded-lg bg-[#F0FAFF] border border-[#BAE6FD]/70">
                       <span className="text-[10px] text-[#64748B] block font-medium">Dissolved O₂</span>
-                      <span className="text-xs font-black text-teal-600 mt-0.5 block font-mono">
+                      <span className="text-xs font-semibold text-teal-600 mt-0.5 block font-mono">
                         {typeof latestReading?.dissolvedOxygen === 'number' ? `${latestReading.dissolvedOxygen.toFixed(1)} mg/L` : '7.2 mg/L'}
                       </span>
                     </div>
@@ -451,7 +451,7 @@ export default function HomePage() {
                 <span>Platform Overview & Civic Mission</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight leading-tight" id="mission">
+              <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight leading-tight" id="mission">
                 Continuous Monitoring &amp; Civic Awareness: <br />
                 <span className="text-[#0284C7]">The JalDrishti Platform</span>
               </h2>
@@ -532,15 +532,15 @@ export default function HomePage() {
                 <div className="grid grid-cols-3 gap-2 pt-3 px-1 text-center">
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Sampling Rate</span>
-                    <span className="text-xs font-black text-[#0284C7] mt-0.5 block font-mono">30 Seconds</span>
+                    <span className="text-xs font-semibold text-[#0284C7] mt-0.5 block font-mono">30 Seconds</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Standard</span>
-                    <span className="text-xs font-black text-[#15803D] mt-0.5 block">BIS IS 10500</span>
+                    <span className="text-xs font-semibold font-mono text-[#15803D] mt-0.5 block">BIS IS 10500</span>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F0FAFF] border border-[#BAE6FD]/70">
                     <span className="text-[10px] text-[#64748B] block font-medium">Telemetry</span>
-                    <span className="text-xs font-black text-[#0284C7] mt-0.5 block">Wi-Fi / REST</span>
+                    <span className="text-xs font-semibold font-mono text-[#0284C7] mt-0.5 block">Wi-Fi / REST</span>
                   </div>
                 </div>
               </div>
@@ -558,7 +558,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
               <span>Multi-Parameter Telemetry</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight">
               Essential Water Quality Indicators
             </h2>
             <p className="text-sm text-[#475569] mt-3 leading-relaxed">
@@ -729,7 +729,7 @@ export default function HomePage() {
               <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping" />
               <span>Interactive Telemetry Demonstration</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight">
               Live Monitoring &amp; Early Warning System
             </h2>
             <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
@@ -826,7 +826,7 @@ export default function HomePage() {
                   <DemoBadge size="xs" label="Sim" />
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                  <span className="text-2xl font-semibold font-mono text-[#1E293B]">
                     {stationReading.pH?.toFixed(2) || '7.35'}
                   </span>
                   <span className="text-xs font-semibold text-[#64748B]">pH</span>
@@ -848,7 +848,7 @@ export default function HomePage() {
                   <DemoBadge size="xs" label="Sim" />
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className={`text-2xl font-black font-mono ${stationReading.turbidity > 5.0 ? 'text-amber-700' : 'text-[#1E293B]'}`}>
+                  <span className={`text-2xl font-semibold font-mono ${stationReading.turbidity > 5.0 ? 'text-amber-700' : 'text-[#1E293B]'}`}>
                     {stationReading.turbidity?.toFixed(2) || '1.42'}
                   </span>
                   <span className="text-xs font-semibold text-[#64748B]">NTU</span>
@@ -872,7 +872,7 @@ export default function HomePage() {
                   <DemoBadge size="xs" label="Sim" />
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                  <span className="text-2xl font-semibold font-mono text-[#1E293B]">
                     {stationReading.tds || 245}
                   </span>
                   <span className="text-xs font-semibold text-[#64748B]">ppm</span>
@@ -892,7 +892,7 @@ export default function HomePage() {
                   <DemoBadge size="xs" label="Sim" />
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                  <span className="text-2xl font-semibold font-mono text-[#1E293B]">
                     {stationReading.dissolvedOxygen?.toFixed(1) || '7.2'}
                   </span>
                   <span className="text-xs font-semibold text-[#64748B]">mg/L</span>
@@ -912,7 +912,7 @@ export default function HomePage() {
                   <DemoBadge size="xs" label="Sim" />
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black font-mono text-[#1E293B]">
+                  <span className="text-2xl font-semibold font-mono text-[#1E293B]">
                     {stationReading.temperature?.toFixed(1) || '23.8'}
                   </span>
                   <span className="text-xs font-semibold text-[#64748B]">°C</span>
@@ -1171,7 +1171,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
               <span>System Architecture</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight">
               How JalDrishti Works
             </h2>
             <p className="text-sm text-[#475569] mt-2.5 leading-relaxed">
@@ -1281,7 +1281,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
               <span>Answers &amp; Guidelines</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight">
               FAQ
             </h2>
             <p className="text-sm text-[#475569] mt-3 leading-relaxed">
@@ -1326,7 +1326,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E0F7FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
               <span>Inquiries & Contact</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-[#1E293B] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#1E293B] tracking-tight">
               Contact the JalDrishti Research Team
             </h2>
             <p className="text-sm text-[#475569] mt-2 leading-relaxed">
@@ -1506,7 +1506,7 @@ export default function HomePage() {
       {/* 9. CALL TO ACTION SECTION (DIRECTLY PRECEDING FOOTER) */}
       <section className="py-16 bg-gradient-to-br from-[#0369A1] via-[#0284C7] to-[#38BDF8] text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-heading tracking-tight text-white drop-shadow-sm">
+          <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight text-white drop-shadow-sm">
             Ready to Explore Community Water Quality?
           </h2>
           <p className="text-sm sm:text-base text-white/95 max-w-2xl mx-auto leading-relaxed">

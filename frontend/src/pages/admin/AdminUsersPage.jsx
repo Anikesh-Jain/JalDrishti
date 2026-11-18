@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
         {/* Header matching reference UI */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Admin - User Management</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin - User Management</h1>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Manage system users and their roles
             </p>
@@ -357,7 +357,7 @@ export default function AdminUsersPage() {
                         </td>
 
                         {/* Last Login */}
-                        <td className="py-3 px-3 text-slate-500">
+                        <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">
                           {u.lastLogin
                             ? new Date(u.lastLogin).toLocaleDateString('en-US', {
                                 month: 'short',
